@@ -31,7 +31,24 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
+  fluttertoast: ^8.0.8
+  image_picker: ^0.8.3+2
+  date_time_picker: ^2.0.0
+  firebase_core: ^2.2.0
+  firebase_analytics: ^10.0.5
+  firebase_auth: ^4.1.2
+  google_sign_in: "^5.0.7"
+  cloud_firestore: ^4.0.5 # Podfile adds implementation to avoid extreme xcode build times
+  firebase_database: ^10.0.5
+  firebase_storage: ^11.0.5
+  pull_to_refresh: ^2.0.0
+  provider: ^5.0.0
+  loading_indicator: ^3.0.1
+
+  intl: ^0.17.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -53,6 +70,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true # Add this line
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
