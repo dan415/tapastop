@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "88079836718",
+    "project_id": "tapastop-80374",
+    "storage_bucket": "tapastop-80374.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:88079836718:android:81be85f64c8b7d6e31e1bf",
+        "android_client_info": {
+          "package_name": "com.upm.isii.grupo62.tapastop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "88079836718-a1n6o1bkmq151hr79ucvapas0gcvq667.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcj7-0JewwdE8choh7SDiVBfADrnvPy3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "88079836718-a1n6o1bkmq151hr79ucvapas0gcvq667.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "88079836718-is75hvp9is8v76uk9ljre0bhv3ijivi3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.upm.isii.grupo62.tapastop"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
