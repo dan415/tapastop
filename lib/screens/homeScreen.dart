@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tapastop/screens/GalardonScreen.dart';
 import 'package:tapastop/screens/SearchScreen.dart';
-import 'package:tapastop/screens/favouriteScreen.dart';
+import 'package:tapastop/screens/feedScreen.dart';
 import 'package:tapastop/screens/helpScreen.dart';
 import 'package:tapastop/screens/profileScreen.dart';
 import 'package:tapastop/screens/settingScreen.dart';
@@ -96,11 +96,11 @@ class HomeScreenState extends State<HomeScreen> {
                   Container(
                     color: Theme.of(context).primaryColorLight,
                     child: GestureDetector(
-                      onTap: () => Navigator.push(context, MyNavigator.createRoute(const FavouriteScreen(), isAnimated: true)),
+                      onTap: () => Navigator.push(context, MyNavigator.createRoute(const feedScreen(), isAnimated: true)),
                       child: SizedBox(
                           width: 50,
                           height: 50,
-                          child: Column( children: const [Icon(Icons.favorite, size: 100,), Text("Restuarantes favoritos")])
+                          child: Column( children: const [Icon(Icons.food_bank, size: 100,), Text("Degustaciones")])
 
                       ),
                     ),
