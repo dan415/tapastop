@@ -8,6 +8,8 @@ import 'package:tapastop/firebase_operations/authenticator.dart';
 import 'package:tapastop/firebase_operations/databaseAPI.dart';
 
 import '../utils/globals.dart';
+import '../utils/navigator.dart';
+import 'homeScreen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -150,6 +152,9 @@ class _SignUpState extends State<SignUpScreen> {
                       validated_age = true;
                     } else {
                       validated_age = false;
+                    }
+                    if (!validated_age) {
+                      toast(AppLocalizations.of(context)!.invAge);
                     }
                   }),
             ),
@@ -295,6 +300,9 @@ class _SignUpState extends State<SignUpScreen> {
                     // Añadir usuario a la base de datos
                     String uid = await _auth.createUser(correo, _password);
                     _db.addUser(uid, nombre, apellidos, null, _dateTime, null);
+                    Navigator.pushAndRemoveUntil(
+                        context, MyNavigator.createRoute(HomeScreen()), (
+                        Route<dynamic> route) => false);
                   }
                 },
               ),
