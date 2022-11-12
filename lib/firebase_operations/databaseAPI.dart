@@ -51,6 +51,7 @@ class Database {
 		return storage.ref().child('degustaciones').child(degustacion).child('pic').getData();
 	}
 
+	//TODO NO FUNCIONA
 	addDegustacion(String degustacion, String uid, String restaurante, String descripcion, List<String> tipo) {
 		List<String> degustaciones = db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
 		if (degustaciones.contains(degustacion)) {
@@ -123,12 +124,14 @@ class Database {
 
 	///List<String> degustaciones = await getDegustacionesUsuario('uid');
 	///Cada elemento de degustaciones es el nombre (ref) de una degustacion
+	//TODO ESTE SUPONGO QUE TAMPOCO
   Future<List<String>> getDegustacionesUsuario(String uid) async {
 		return db.collection('users').doc(uid).get().then((value) => value.data()!['degustaciones']) as List<String>;
 	}
 
 	///List<String> degustaciones = await getDegustacionesRestaurante('restaurante');
 	///Cada elemento de degustaciones es el nombre (ref) de una degustacion
+	//TODO NO FUNCIONA
 	Future<List<String>> getDegustacionesRestaurante(String restaurante) async {
 		return db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
 	}

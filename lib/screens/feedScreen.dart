@@ -10,6 +10,7 @@ import 'package:tapastop/utils/globals.dart';
 import '../firebase_operations/authenticator.dart';
 import '../firebase_operations/databaseAPI.dart';
 import '../utils/navigator.dart';
+import '../utils/starRating.dart';
 
 class feedScreen extends StatefulWidget {
   const feedScreen({super.key});
@@ -22,11 +23,17 @@ class feedScreen extends StatefulWidget {
 class feedScreenState extends State<feedScreen> {
   List<Map<String, dynamic>> degustaciones_list = [];
   List<String> degustaciones_names = [];
+  late Database db;
+  late FirebaseAuthenticator auth;
+  int rating = 0;
+  Map<String, dynamic> comentarios = {};
+  Map<String, dynamic> valoraciones = {};
 
   @override
+  @override
   void initState() {
-    Database db = Database();
-    FirebaseAuthenticator auth = FirebaseAuthenticator();
+    db = Database();
+    auth = FirebaseAuthenticator();
     Future<List<String>>? degustaciones = db.getDegustaciones();
     degustaciones.then((value) {
       setState(() {
@@ -40,9 +47,19 @@ class feedScreenState extends State<feedScreen> {
               ele.addAll(value.data()!);
               ele["nombre"] = degus;
               degustaciones_list.add(ele);
-              print(ele);
             });
           });
+          db.getComentarios(degus).then((value) {
+            setState(() {
+              comentarios[degus] = value;
+            });
+          });
+          db.getValoracionMedia(degus).then((value) {
+            setState(() {
+              valoraciones[degus] = value * 1.0;
+            });
+          });
+
         }
       });
     });
@@ -70,6 +87,8 @@ class feedScreenState extends State<feedScreen> {
   }
 
   Widget degustacion(degustacion){
+    String comentario = "";
+    int? valoracion;
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -85,25 +104,39 @@ class feedScreenState extends State<feedScreen> {
                Text(degustacion['descripcion'], style: const TextStyle(fontSize: 15, color: Colors.black)),
                Text(degustacion['restaurante'], style: const TextStyle(fontSize: 15, color: Colors.black)),
                Text(readTimestamp(degustacion['fecha'].seconds*1000).toString(), style: const TextStyle(fontSize: 15, color: Colors.black)),
+                StarRating(
+                    rating: valoraciones[degustacion['nombre']] ?? 0.0,
+                    onRatingChanged: (rating) => {}, color: Theme.of(context).primaryColor,)
               ]
         ),
-        const Divider(height: 10,),
+        const Divider(height: 10.0),
         TextFormField(
+           keyboardType: TextInputType.number,
+            onChanged: (cm) {
+              valoracion = int.parse(cm);
+            },
+            decoration: const InputDecoration(
+              hintText: 'Introduce una valoración entre 0 y 5',)
+        ),
+        TextFormField(
+            onChanged: (cm) {
+              comentario = cm;
+            },
           decoration: InputDecoration(
             suffix: IconButton(
                 onPressed: () {
-
+                  db.addComentario(auth.getCurrentUID()!, degustacion['nombre'], comentario, valoracion);
                 }
                 , icon: Icon(Icons.send)),
             hintText: 'Escribe un comentario',)
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: 10,
+            itemCount: comentarios[degustacion['nombre']]?.size ?? 0,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text('Comentario'),
-                subtitle: Text('Usuario'),
+                title: Text(comentarios[degustacion['nombre']].docs[index].data()['comentario']),
+                subtitle: Text("Usuario"),
               );
             },
           ),
