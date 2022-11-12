@@ -18,6 +18,7 @@ class GalardonScreenState extends State<GalardonScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
       padding: Paddings.containerPadding(screenSize: MediaQuery.of(context).size),
       child: Column(children: [
         Container(
@@ -31,13 +32,13 @@ class GalardonScreenState extends State<GalardonScreen> {
                     onTap: () => {},
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
+                      children: const [
                         FittedBox(
                           fit: BoxFit.contain,
                           child: Text(
-                            AppLocalizations.of(context)!.friends,
+                            "Galardones",
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 30,
                               color: Colors.black,
                             ),
@@ -58,24 +59,38 @@ class GalardonScreenState extends State<GalardonScreen> {
 
   Widget _galardonList(galardones) {
     List<Widget> galardonList = [];
-    for (var galardon in galardones) {
-      galardonList.add(
-          _galardonListItem(
-              id: galardonList.length,
-              name: galardon.username,
-              descripcion: galardon.id
-          )
-      );
-      galardonList.add(const Divider(
-        thickness: 2,
-      ));
+    if (galardones != null) {
+      for (var galardon in galardones) {
+        galardonList.add(
+            _galardonListItem(
+                id: galardonList.length,
+                name: galardon.username,
+                descripcion: galardon.id
+            )
+        );
+        galardonList.add(const Divider(
+          thickness: 2,
+        ));
+      }
     }
 
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
       child: ListView(
-        children: galardonList,
+        children: galardonList.isNotEmpty ? galardonList : [
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: const Text(
+              "No tienes galardones",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+              ),
+            ),
+          )
+          ],
       ),
     );
   }
@@ -96,6 +111,7 @@ class GalardonScreenState extends State<GalardonScreen> {
 
   Widget _galardonListItem({required id, required String name, required String descripcion}) {
     return Container(
+      color: Colors.transparent,
         padding: const EdgeInsets.symmetric(vertical: 25),
         child: Row(
           children: [

@@ -11,10 +11,33 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  _ProviderWidgetState createState() => _ProviderWidgetState();
+}
+
+class _ProviderWidgetState extends State
+    with AutomaticKeepAliveClientMixin {
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return ChangeNotifierProvider.value(
+      value: UserVM(),
+      child: ProfileScreenPage(),
+    );
+  }
+}
+
+class ProfileScreenPage extends StatefulWidget {
+  const ProfileScreenPage({super.key});
+
+  @override
   ProfileScreenState createState() => ProfileScreenState();
 }
 
-class ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreenState extends State<ProfileScreenPage> {
   DocumentSnapshot? snapshot;
   String? _profilePic;
 

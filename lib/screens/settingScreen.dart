@@ -17,14 +17,21 @@ import '../model/userViewModel.dart';
 import '../utils/globals.dart';
 
 class AccountPage extends StatefulWidget {
-  _AccountPageState createState() => _AccountPageState();
+  _ProviderWidgetState createState() => _ProviderWidgetState();
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _ProviderWidgetState extends State
+    with AutomaticKeepAliveClientMixin {
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _AccountPage(),
+    super.build(context);
+    return ChangeNotifierProvider.value(
+      value: UserVM(),
+      child: _AccountPage(),
     );
   }
 }
@@ -171,10 +178,12 @@ class _AccountState extends State<_AccountPage> {
   Widget _body() {
     return ListView(
       children: [
+        Material(child:
         ListTile(
           title: Text(AppLocalizations.of(context)!.profile,
               style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        )),
+        Material(child:
         ListTile(
           title: editing == Editing.name
               ? TextFormField(
@@ -197,7 +206,8 @@ class _AccountState extends State<_AccountPage> {
             editing = Editing.name;
             setState(() {});
           },
-        ),
+        )),
+        Material(child:
         ListTile(
           title: editing == Editing.bio
               ? TextFormField(
@@ -220,11 +230,13 @@ class _AccountState extends State<_AccountPage> {
             editing = Editing.bio;
             setState(() {});
           },
-        ),
+        )),
+        Material(child:
         ListTile(
           title: Text(AppLocalizations.of(context)!.personal,
               style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        )),
+        Material(child:
         ListTile(
           title: editing == Editing.username
               ? TextFormField(
@@ -255,7 +267,8 @@ class _AccountState extends State<_AccountPage> {
             editing = Editing.username;
             setState(() {});
           },
-        ),
+        )),
+        Material(child:
         ListTile(
           title: Text(AppLocalizations.of(context)!.cPass),
           trailing: const Icon(CupertinoIcons.asterisk_circle_fill),
@@ -263,7 +276,8 @@ class _AccountState extends State<_AccountPage> {
             editing = Editing.password;
             setState(() {});
           },
-        ),
+        )),
+        Material(child:
         ListTile(
           title: ((editing == Editing.birthday) && Platform.isAndroid)
               ? DateTimePicker(
@@ -298,7 +312,8 @@ class _AccountState extends State<_AccountPage> {
             }
             setState(() {});
           },
-        ),
+        )),
+        Material(child:
         ListTile(
           title: editing == Editing.phone
               ? TextFormField(
@@ -322,7 +337,7 @@ class _AccountState extends State<_AccountPage> {
             editing = Editing.phone;
             setState(() {});
           },
-        ),
+        )),
       ],
     );
   }

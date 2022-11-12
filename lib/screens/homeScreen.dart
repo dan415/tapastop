@@ -5,6 +5,7 @@ import 'package:tapastop/screens/SearchScreen.dart';
 import 'package:tapastop/screens/favouriteScreen.dart';
 import 'package:tapastop/screens/helpScreen.dart';
 import 'package:tapastop/screens/profileScreen.dart';
+import 'package:tapastop/screens/settingScreen.dart';
 
 import '../utils/navigator.dart';
 
@@ -104,6 +105,18 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
+        Container(
+          color: Theme.of(context).primaryColorLight,
+          child: GestureDetector(
+            onTap: () => Navigator.push(context, MyNavigator.createRoute( AccountPage(), isAnimated: true)),
+            child: SizedBox(
+                width: 50,
+                height: 50,
+                child: Column( children: const [Icon(Icons.settings, size: 100,), Text("Ajustees")])
+
+            ),
+          ),
+        ),
                 ],
       )
     );
