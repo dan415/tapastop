@@ -1,12 +1,31 @@
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../utils/globals.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  _SignUpState createState() => _SignUpState();
+}
+
+class _SignUpPageState extends State<SignUpScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: _SignUpScreen(),
+    );
+  }
+}
+
+class _SignUpScreen extends StatefulWidget {
+  const _SignUpScreen({super.key});
 
   @override
   _SignUpState createState() => _SignUpState();
@@ -21,6 +40,7 @@ class _SignUpState extends State<SignUpScreen> {
   String _password = "";
   String _dateTime = "01/01/1970";
   bool _obscureText = true;
+  bool validated_age = false;
 
   Widget _buildUsernameField(){
     return Padding(
@@ -50,6 +70,10 @@ class _SignUpState extends State<SignUpScreen> {
     );
   }
 
+  void toast(String text) {
+    Fluttertoast.showToast(msg: text, backgroundColor: Colors.grey);
+  }
+
   Widget _title(){
     return Padding(
         padding: EdgeInsets.symmetric(
@@ -67,25 +91,34 @@ class _SignUpState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarIconBrightness: Brightness.dark, statusBarColor: Colors.transparent));
     return NestedScrollView(
+
         headerSliverBuilder: (context, innerBoxScrolled) => [
-          SliverAppBar(
+          const SliverAppBar(
             pinned: true,
-            iconTheme: const IconThemeData(
+            iconTheme: IconThemeData(
               color: Colors.black,
             ),
-            backgroundColor: Colors.white,
-            title: Logo.build(context),
-            floating: true,
+            backgroundColor: Colors.cyanAccent,
+            expandedHeight: 0,
+
+            title: Text("TapasTop", style: TextStyle(color: Colors.black)),
+            floating: false,
+            flexibleSpace: FlexibleSpaceBar(collapseMode: CollapseMode.pin),
           ),
         ],
 
         body: ListView(
             children: [
+              Material(
+              child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.addBday,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                 title: TextFormField(
                     initialValue: _dateTime,
@@ -98,20 +131,24 @@ class _SignUpState extends State<SignUpScreen> {
                         : null,
                     decoration: InputDecoration(
                     border: const UnderlineInputBorder(), hintText: AppLocalizations.of(context)!.enterUoE),
-              )),
+              ))),
+              Material(child:
               ListTile(
                 title: MaterialButton(
+                  color: Theme.of(context).primaryColor,
                   child: Text(AppLocalizations.of(context)!.verify,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   onPressed: () {
                     //TODO VALIDAR FECHA
                   }
                  )
-              ),
+              )),
+              Material(child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.chooseUser,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: username,
@@ -124,11 +161,13 @@ class _SignUpState extends State<SignUpScreen> {
                         : null,
                     decoration: InputDecoration(
                         border: const UnderlineInputBorder(), hintText: AppLocalizations.of(context)!.enterUoE),
-                  )),
+                  ))),
+              Material(child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.choosePass,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: "",
@@ -154,11 +193,13 @@ class _SignUpState extends State<SignUpScreen> {
                         border: const OutlineInputBorder(),
                         hintStyle: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
                         hintText: AppLocalizations.of(context)!.enterPass)
-                  )),
+                  ))),
+              Material(child:
               ListTile(
-                title: Text(AppLocalizations.of(context)!.cName,
+                title: Text(AppLocalizations.of(context)!.enterNombre,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: nombre,
@@ -166,14 +207,16 @@ class _SignUpState extends State<SignUpScreen> {
                       nombre = user;
                     },
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (x) => !Global.usernameRegExp.hasMatch(x ?? "")
+                    validator: (x) => !Global.nombreRegExp.hasMatch(x ?? "")
                         ? AppLocalizations.of(context)!.invtext
                         : null,
-                     )),
+                     ))),
+              Material(child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.capellidos,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: apellidos,
@@ -181,14 +224,16 @@ class _SignUpState extends State<SignUpScreen> {
                       apellidos = user;
                     },
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (x) => !Global.usernameRegExp.hasMatch(x ?? "")
+                    validator: (x) => !Global.nombreRegExp.hasMatch(x ?? "")
                         ? AppLocalizations.of(context)!.invtext
                         : null,
-                  )),
+                  ))),
+              Material(child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.enterEmail,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: correo,
@@ -199,31 +244,44 @@ class _SignUpState extends State<SignUpScreen> {
                     validator: (x) => !Global.emailRegEXp.hasMatch(x ?? "")
                         ? AppLocalizations.of(context)!.invMail
                         : null,
-                  )),
+                  ))),
+              Material(child:
               ListTile(
                 title: Text(AppLocalizations.of(context)!.enterPhone,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+              )),
+              Material(child:
               ListTile(
                   title: TextFormField(
                     initialValue: telefono,
-                    onChanged: (user) {
-                      telefono = user;
+                    onChanged: (tele) {
+                      telefono = tele;
+                      print(!Global.phoneRegExp.hasMatch(telefono ?? ""));
                     },
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (x) => !Global.phoneRegExp.hasMatch(x ?? "")
+                    validator: (t) => !Global.phoneRegExp.hasMatch(t ?? "")
                         ? AppLocalizations.of(context)!.invPhone
-                        : null,
-                  )),
+                        : null
+                  ))),
+              Material(child:
               ListTile(
                   title: MaterialButton(
+                    color: Theme.of(context).primaryColor,
                       child: Text(AppLocalizations.of(context)!.signUp,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                       onPressed: () {
+                      if (!validated_age){
+                          toast(AppLocalizations.of(context)!.invAge);
+                      }
+                      else {
                         //TODO VALIDAR USUARIO Y CREAR CUENTA
                       }
+
+                      }
                   )
-              ),
+              )),
+              Container(height: 200, color: Colors.white,)
+
     ]
     )
     );

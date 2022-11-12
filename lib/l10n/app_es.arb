@@ -38,6 +38,7 @@
   "emergency": "Emergencia",
   "enterCurPass": "Escribe tu contraseña actual",
   "enterEmail": "Escribe tu dirección de correo electrónico",
+  "enterNombre": "Introduce tu nombre",
   "enterLinkedMail": "Escribe el correo vinculado a tu cuenta",
   "enterPass": "Escribe tu contraseña",
   "enterUoE": "Escribe tu nombre de usuario o correo",
@@ -139,5 +140,7 @@
   "invDate": "La fecha introducida es inválida, el formato es dd/mm/yyyy",
   "invtext": "El texto introducido es inválido",
   "capellidos":"Introduce tus apellidos",
-  "enterPhone": "Introduce tu número de teléfono"
+  "enterPhone": "Introduce tu número de teléfono",
+  "invAge": "You need to validate your age first",
+  "app": "TapasTop"
 }

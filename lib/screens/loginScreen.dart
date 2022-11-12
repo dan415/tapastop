@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
   LoginScreenState createState() => LoginScreenState();
 }
 
+
 class LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
   String _username = "testuser@gmail.com";
@@ -29,7 +30,7 @@ class LoginScreenState extends State<LoginScreen> {
         _username = username;
       },
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: (username) => !Global.usernameRegExp.hasMatch(username ?? "") &&
+      validator: (username) => !Global.emailRegEXp.hasMatch(username ?? "") &&
           !Global.usernameRegExp.hasMatch(username ?? "")
           ? AppLocalizations.of(context)!.invUser
           : null,
@@ -89,11 +90,16 @@ class LoginScreenState extends State<LoginScreen> {
         // decoration: BoxDecoration(gradient: Utils.gradient),
         child: ElevatedButton(
             onPressed: () async {
-              //TODO LOGIN: RETURN STATE IF TRUE GO TO HOME
-              Navigator.pushAndRemoveUntil(context, MyNavigator.createRoute(HomeScreen()), (Route<dynamic> route) => false);
-            },
+              LogState state = await loginVM.mailPassLogin(_username, _password);
+              if (true//state == LogState.success
+              ) {
+                Navigator.pushAndRemoveUntil(
+                    context, MyNavigator.createRoute(HomeScreen()), (
+                    Route<dynamic> route) => false);
+              }
+              },
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, double.infinity), backgroundColor: Colors.transparent,
+              minimumSize: const Size(double.infinity, double.infinity), backgroundColor:Theme.of(context).primaryColorLight,
               shadowColor: Colors.transparent,
             ),
             child: FittedBox(
@@ -108,7 +114,7 @@ class LoginScreenState extends State<LoginScreen> {
         height: MediaQuery.of(context).size.height * 0.04,
         child: TextButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpScreen()));
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFA72886), shape: ContinuousRectangleBorder(
@@ -144,7 +150,7 @@ class LoginScreenState extends State<LoginScreen> {
                     child: Text(AppLocalizations.of(context)!.forgotPass),
                     onPressed: () {
                       Navigator.push(
-                          context, MaterialPageRoute(builder: (context) => ForgotPassScreen()));
+                          context, MaterialPageRoute(builder: (context) => const ForgotPassScreen()));
                     }))));
   }
 

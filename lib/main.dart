@@ -6,7 +6,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:tapastop/screens/homeScreen.dart';
 import 'package:tapastop/screens/loginScreen.dart';
+import 'package:tapastop/utils/globals.dart';
 
 
 void main() async {
@@ -42,7 +44,7 @@ class _MyAppState extends State<MyApp> {
       builder: (context, snapshot) {
         if (snapshot.hasError) throw Exception("Something went wrong");
 
-        if (snapshot.connectionState == ConnectionState.done)
+        if (snapshot.connectionState == ConnectionState.done) {
           return MultiProvider(
             providers: [
               ChangeNotifierProvider.value(value: LogSignInVM()),
@@ -65,26 +67,26 @@ class _MyAppState extends State<MyApp> {
                   primaryColor: const Color(0xFFB34AA9),
                   primaryColorDark: const Color(0xFFA72886),
                   primaryColorLight: const Color(0xFFC677BF),
-                  fontFamily: 'montserrat',
                   colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0xFFD9A5D4))),
               home: FutureBuilder(
                 builder: (context, _ /*AsyncSnapshot<bool> snapshot*/) {
                   if (FirebaseAuth.instance.currentUser != null) {
-                    return HomePage();
+                    return HomeScreen();
                   } else {
-                    return LoginScreen();
+                    return const LoginScreen();
                   }
                 },
               ),
             ),
           );
+        }
 
         return Container(
           color: Colors.white,
           alignment: Alignment.center,
-          child: LoadingIndicator(
+          child: const LoadingIndicator(
             indicatorType: Indicator.ballClipRotateMultiple,
-            colors: const [Color(0xFFC677BF)],
+            colors: [Color(0xFFC677BF)],
             backgroundColor: Colors.white,
           ),
         );
