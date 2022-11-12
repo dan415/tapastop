@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:tapastop/firebase_operations/authenticator.dart';
 import 'package:tapastop/screens/signupScreen.dart';
 import 'package:tapastop/utils/globals.dart';
 import 'package:tapastop/screens/forgotpassword.dart';
@@ -20,8 +21,9 @@ class LoginScreen extends StatefulWidget {
 
 class LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
-  String _username = "testuser@gmail.com";
+  String _username = "tapastop.grupo62@gmail.com";
   String _password = "123456";
+  final FirebaseAuthenticator _auth = FirebaseAuthenticator();
 
   Widget _buildUsernameField() {
     return TextFormField(
@@ -90,8 +92,8 @@ class LoginScreenState extends State<LoginScreen> {
         // decoration: BoxDecoration(gradient: Utils.gradient),
         child: ElevatedButton(
             onPressed: () async {
-              LogState state = await loginVM.mailPassLogin(_username, _password);
-              if (true//state == LogState.success
+              bool state = await _auth.login(_username, _password);
+              if (state
               ) {
                 Navigator.pushAndRemoveUntil(
                     context, MyNavigator.createRoute(HomeScreen()), (
