@@ -15,6 +15,11 @@ class FirebaseAuthenticator {
     return cred.user!.uid;
   }
 
+  // Get current uid 
+    String? getCurrentUID() {
+        return _auth.currentUser?.uid;
+    }
+
   login(email, password) async {
     try {
       await _auth.signInWithEmailAndPassword(
