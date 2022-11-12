@@ -39,7 +39,8 @@ class _SignUpState extends State<SignUpScreen> {
   String username = "";
   String nombre = "";
   String apellidos = "";
-  String telefono = "";
+  String localidad = "";
+  String bio = "";
   String correo = "";
   String _password = "";
   String _dateTime = "1980-01-01";
@@ -269,23 +270,36 @@ class _SignUpState extends State<SignUpScreen> {
                 ? AppLocalizations.of(context)!.invMail
                 : null,
           ))),
-          Material(
+          const Material(
               child: ListTile(
-            title: Text(AppLocalizations.of(context)!.enterPhone,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text("Introduce de dónde eres",
+                style: TextStyle(fontWeight: FontWeight.bold)),
           )),
           Material(
               child: ListTile(
                   title: TextFormField(
-                      initialValue: telefono,
+                      initialValue: localidad,
                       onChanged: (tele) {
-                        telefono = tele;
-                        print(!Global.phoneRegExp.hasMatch(telefono ?? ""));
+                        localidad = tele;
                       },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: (t) => !Global.phoneRegExp.hasMatch(t ?? "")
-                          ? AppLocalizations.of(context)!.invPhone
-                          : null))),
+                      autovalidateMode: AutovalidateMode.disabled,
+                      )),
+          ),
+          const Material(
+              child: ListTile(
+                title: Text("Introduce tu biografía",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              )),
+          Material(
+            child: ListTile(
+                title: TextFormField(
+                  keyboardType: TextInputType.multiline,
+                  onChanged: (tele) {
+                    bio = tele;
+                  },
+                  autovalidateMode: AutovalidateMode.disabled,
+                )),
+          ),
           Material(
             child: ListTile(
               title: MaterialButton(
@@ -299,7 +313,7 @@ class _SignUpState extends State<SignUpScreen> {
                   } else {
                     // Añadir usuario a la base de datos
                     String uid = await _auth.createUser(correo, _password);
-                    _db.addUser(uid, nombre, apellidos, null, _dateTime, null);
+                    _db.addUser(uid, nombre, apellidos, localidad, _dateTime, null);
                     Navigator.pushAndRemoveUntil(
                         context, MyNavigator.createRoute(HomeScreen()), (
                         Route<dynamic> route) => false);

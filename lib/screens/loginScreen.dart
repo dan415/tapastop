@@ -93,8 +93,7 @@ class LoginScreenState extends State<LoginScreen> {
         child: ElevatedButton(
             onPressed: () async {
               bool state = await _auth.login(_username, _password);
-              if (state
-              ) {
+              if (state) {
                 Navigator.pushAndRemoveUntil(
                     context, MyNavigator.createRoute(HomeScreen()), (
                     Route<dynamic> route) => false);
