@@ -51,13 +51,14 @@ class Database {
 		return storage.ref().child('degustaciones').child(degustacion).child('pic').getData();
 	}
 
-	addDegustacion(String degustacion, String restaurante, String descripcion, List<String> tipo) {
+	addDegustacion(String degustacion, String uid, String restaurante, String descripcion, List<String> tipo) {
 		List<String> degustaciones = db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
 		if (degustaciones.contains(degustacion)) {
 			return;
 		}
 
 		db.collection('degustaciones').doc(degustacion).set({ 
+			'user': uid,
 			'descripcion': descripcion,
 			'tipo': tipo,
 			'restaurante': restaurante,
@@ -105,6 +106,7 @@ class Database {
 	///List<String> tipo = d['tipo'];
 	///String restaurante = d['restaurante'];
 	///DateTime fecha = d['fecha'];
+	///String user = d['user'];
 	Future<DocumentSnapshot<Map<String, dynamic>>> getInfoDegustacion(String degustacion) {
 		return db.collection('degustaciones').doc(degustacion).get();
 	}
