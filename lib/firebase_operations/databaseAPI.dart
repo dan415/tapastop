@@ -57,10 +57,11 @@ class Database {
 			return;
 		}
 
-		db.collection('degustaciones').doc(degustacion).set({
-			'degustacion': degustacion,
+		db.collection('degustaciones').doc(degustacion).set({ 
 			'descripcion': descripcion,
 			'tipo': tipo,
+			'restaurante': restaurante,
+			'fecha': DateTime.now(),
 		});
 
 		degustaciones.add(degustacion);
@@ -73,7 +74,6 @@ class Database {
 	addComentario(String uid, String degustacion, String comentario, int? valoracion) {
 		DocumentReference deg = db.collection('degustaciones').doc(degustacion);
 		deg.collection('comentarios').doc(uid).set({
-			'uid': uid,
 			'comentario': comentario,
 			'valoracion': valoracion,
 		});
@@ -103,13 +103,15 @@ class Database {
 	///DocumentSnapshot<Map<String, dynamic>> d = await getInfoDegustacion('degustacion');
 	///String descripcion = d['descripcion'];
 	///List<String> tipo = d['tipo'];
+	///String restaurante = d['restaurante'];
+	///DateTime fecha = d['fecha'];
 	Future<DocumentSnapshot<Map<String, dynamic>>> getInfoDegustacion(String degustacion) {
 		return db.collection('degustaciones').doc(degustacion).get();
 	}
 
 	///QuerySnapshot<Map<String, dynamic>> comentarios = await getComentarios('degustacion');
 	///comentarios.docs.forEach((element) {
-	///		String uid = element['uid'];
+	///		String uid = element.id;
 	///		String comentario = element['comentario'];
 	///		int valoracion = element['valoracion'];
 	///});
@@ -127,6 +129,18 @@ class Database {
 	///Cada elemento de degustaciones es el nombre (ref) de una degustacion
 	Future<List<String>> getDegustacionesRestaurante(String restaurante) async {
 		return db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
+	}
+
+	///List<String> degustaciones = await getDegustaciones();
+	///Cada elemento de degustaciones es el nombre (ref) de una degustacion ordenados por fecha
+	Future<List<String>> getDegustaciones() async {
+		List<String> degustaciones = [];
+		await db.collection('degustaciones').orderBy('fecha').get().then((value) {
+			value.docs.forEach((element) {
+				degustaciones.add(element.id);
+			});
+		});
+		return degustaciones;
 	}
 
   addRestaurante(String restaurante) {
