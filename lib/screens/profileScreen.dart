@@ -4,14 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tapastop/screens/loginScreen.dart';
 import '../model/Response.dart';
 import '../model/userViewModel.dart';
+import '../utils/navigator.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProviderWidgetState createState() => _ProviderWidgetState();
+  ProfileScreenState createState() => ProfileScreenState();
 }
 
 class _ProviderWidgetState extends State
@@ -37,7 +39,7 @@ class ProfileScreenPage extends StatefulWidget {
   ProfileScreenState createState() => ProfileScreenState();
 }
 
-class ProfileScreenState extends State<ProfileScreenPage> {
+class ProfileScreenState extends State<ProfileScreen> {
   DocumentSnapshot? snapshot;
   String? _profilePic;
 
@@ -47,21 +49,28 @@ class ProfileScreenState extends State<ProfileScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    snapshot = Provider.of<UserVM>(context).userResponse.data;
-    Response res = Provider.of<UserVM>(context).assetResponse;
-    if (res.status == Status.COMPLETED) {
-      _profilePic = (res.data as Map<String, String>)["pfp"];
-    }
-
+    // snapshot = Provider.of<UserVM>(context).userResponse.data;
+    // Response res = Provider.of<UserVM>(context).assetResponse;
+    // if (res.status == Status.COMPLETED) {
+    //   _profilePic = (res.data as Map<String, String>)["pfp"];
+    // }
+    DocumentSnapshot<Map<String, dynamic>>? user;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-        "@${snapshot?.get("username") ?? "Username not found"}",
+        user?.get("nombre") ?? "Nombre no encontrado",
         ),
         backgroundColor: Theme.of(context).primaryColorDark,
       ),
-      body: Container()
-
+      body: Container(
+          child: Column(
+                children: [
+                  ElevatedButton(onPressed: () {FirebaseAuth.instance.signOut();   Navigator.pushAndRemoveUntil(
+                      context, MyNavigator.createRoute(const LoginScreen()), (
+                      Route<dynamic> route) => false);}, child: Text("Cerrar Sesión")),
+    ]
+      )
+      )
     );
   }
 
