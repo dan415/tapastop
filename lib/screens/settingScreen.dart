@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -17,6 +16,9 @@ import '../model/userViewModel.dart';
 import '../utils/globals.dart';
 
 class AccountPage extends StatefulWidget {
+  const AccountPage({super.key});
+
+  @override
   _AccountPageState createState() => _AccountPageState();
 }
 
@@ -239,7 +241,7 @@ class _AccountState extends State<_AccountPage> {
               onPressed: () async {
                 DataSnapshot? snapshot =
                 await FirebaseDatabase.instance.reference().child("usernames").get();
-                String data = snapshot!.value.toString().replaceAll("}", ",");
+                String data = snapshot.value.toString().replaceAll("}", ",");
                 if (_usernameEdit != "" &&
                     !_usernameEdit.contains(" ") &&
                     !data.contains("$_usernameEdit,")) {

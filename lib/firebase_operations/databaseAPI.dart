@@ -9,15 +9,15 @@ class Database {
   FirebaseFirestore db = FirebaseFirestore.instance;
   final storage = FirebaseStorage.instance;
 
-  addUser(String uid, String nombre, String apellido, String localidad,
-      String edad) {
+  addUser(String uid, String nombre, String? apellido, String? localidad,
+      String edad, String? presentacion) {
     db.collection('users').doc(uid).set({
       'uid': uid,
       'nombre': nombre,
-      'apellido': apellido,
-      'localidad': localidad,
+      'apellido': apellido ?? '',
+      'localidad': localidad ?? '',
       'edad': edad,
-      'galardonado': 0
+      'presentacion': presentacion ?? '',
     });
   }
 
@@ -29,9 +29,20 @@ class Database {
     return storage.ref().child('users').child(uid).child('avatar').getData();
   }
 
-  addDegustacion(String uid, String restaurante, String degustacion) async {
-    db.collection('users').doc(uid).collection('degustaciones').add({
+  addDegustacion(String uid, String restaurante, String degustacion,
+      String comentario) async {
+    DocumentReference degustacionRef = db
+        .collection('users')
+        .doc(uid)
+        .collection('degustaciones')
+        .doc(degustacion);
+
+    degustacionRef.set({
       'restaurante': restaurante,
+      'comentarios.$uid': comentario,
+    });
+
+    db.collection('users').doc(uid).collection('degustaciones').add({
       'degustacion': degustacion,
     });
 
@@ -53,14 +64,19 @@ class Database {
   }
 
   Future<List<String>> getDegustaciones(String uid) async {
-	List snapshots = await db.collection('users').doc(uid).collection('degustaciones').snapshots().toList();
-	List<String> degustaciones = [];
-	snapshots.forEach((element) {
-	  element.docs.forEach((element) {
-		degustaciones.add(element.data()['degustacion']);
-	  });
-	});
-	return degustaciones;
+    List snapshots = await db
+        .collection('users')
+        .doc(uid)
+        .collection('degustaciones')
+        .snapshots()
+        .toList();
+    List<String> degustaciones = [];
+    snapshots.forEach((element) {
+      element.docs.forEach((element) {
+        degustaciones.add(element.data()['degustacion']);
+      });
+    });
+    return degustaciones;
   }
 
   addRestaurante(String restaurante) {
