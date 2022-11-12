@@ -349,6 +349,7 @@ class _AccountState extends State<_AccountPage> {
     return NestedScrollView(
         headerSliverBuilder: (context, innerBoxScrolled) => [
           SliverAppBar(
+            expandedHeight: 10,
             pinned: true,
             iconTheme: const IconThemeData(
               color: Colors.black,

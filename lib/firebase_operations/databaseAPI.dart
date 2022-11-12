@@ -135,7 +135,7 @@ class Database {
 	///Cada elemento de degustaciones es el nombre (ref) de una degustacion ordenados por fecha
 	Future<List<String>> getDegustaciones() async {
 		List<String> degustaciones = [];
-		await db.collection('degustaciones').orderBy('fecha').get().then((value) {
+		await db.collection('degustaciones').orderBy('fecha', descending: true).get().then((value) {
 			value.docs.forEach((element) {
 				degustaciones.add(element.id);
 			});

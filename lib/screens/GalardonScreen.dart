@@ -17,7 +17,9 @@ class GalardonScreenState extends State<GalardonScreen> {
   List<Map<String, String>>? galardones;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Scaffold(
+    body:
+      Container(
       color: Colors.white,
       padding: Paddings.containerPadding(screenSize: MediaQuery.of(context).size),
       child: Column(children: [
@@ -54,7 +56,7 @@ class GalardonScreenState extends State<GalardonScreen> {
           child: _galardonList(galardones)
           ),
       ]),
-    );
+    ));
   }
 
   Widget _galardonList(galardones) {

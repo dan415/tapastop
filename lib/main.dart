@@ -63,11 +63,6 @@ class _MyAppState extends State<MyApp> {
                 //Locale('en', ''), // English, no country code
                 Locale('es', ''), // Spanish, no country code
               ],
-              theme: ThemeData(
-                  primaryColor: const Color(0xFFB34AA9),
-                  primaryColorDark: const Color(0xFFA72886),
-                  primaryColorLight: const Color(0xFFC677BF),
-                  colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0xFFD9A5D4))),
               home: FutureBuilder(
                 builder: (context, _ /*AsyncSnapshot<bool> snapshot*/) {
                   if (FirebaseAuth.instance.currentUser != null) {

@@ -61,7 +61,7 @@ class _SignUpState extends State<SignUpScreen> {
               },
               autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (username) =>
-                  !Global.usernameRegExp.hasMatch(username!)
+                  !Global.emailRegEXp.hasMatch(username!)
                       ? AppLocalizations.of(context)!.invUser
                       : null,
               style: TextStyle(
@@ -161,28 +161,22 @@ class _SignUpState extends State<SignUpScreen> {
             ),
           ),
           Material(
-            child: ListTile(
-              title: Text(AppLocalizations.of(context)!.chooseUser,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ),
+              child: ListTile(
+                title: Text(AppLocalizations.of(context)!.enterEmail,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              )),
           Material(
-            child: ListTile(
-              title: TextFormField(
-                initialValue: username,
-                onChanged: (user) {
-                  username = user;
-                },
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (x) => !Global.usernameRegExp.hasMatch(x ?? "")
-                    ? AppLocalizations.of(context)!.invUser
-                    : null,
-                decoration: InputDecoration(
-                    border: const UnderlineInputBorder(),
-                    hintText: AppLocalizations.of(context)!.enterUoE),
-              ),
-            ),
-          ),
+              child: ListTile(
+                  title: TextFormField(
+                    initialValue: correo,
+                    onChanged: (user) {
+                      correo = user;
+                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (x) => !Global.emailRegEXp.hasMatch(x ?? "")
+                        ? AppLocalizations.of(context)!.invMail
+                        : null,
+                  ))),
           Material(
             child: ListTile(
               title: Text(AppLocalizations.of(context)!.choosePass,
@@ -253,23 +247,7 @@ class _SignUpState extends State<SignUpScreen> {
                 ? AppLocalizations.of(context)!.invtext
                 : null,
           ))),
-          Material(
-              child: ListTile(
-            title: Text(AppLocalizations.of(context)!.enterEmail,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-          )),
-          Material(
-              child: ListTile(
-                  title: TextFormField(
-            initialValue: correo,
-            onChanged: (user) {
-              correo = user;
-            },
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (x) => !Global.emailRegEXp.hasMatch(x ?? "")
-                ? AppLocalizations.of(context)!.invMail
-                : null,
-          ))),
+
           const Material(
               child: ListTile(
             title: Text("Introduce de dónde eres",
@@ -313,7 +291,7 @@ class _SignUpState extends State<SignUpScreen> {
                   } else {
                     // Añadir usuario a la base de datos
                     String uid = await _auth.createUser(correo, _password);
-                    _db.addUser(uid, nombre, apellidos, localidad, _dateTime, null);
+                    _db.addUser(uid, nombre, apellidos, localidad, _dateTime, bio);
                     Navigator.pushAndRemoveUntil(
                         context, MyNavigator.createRoute(HomeScreen()), (
                         Route<dynamic> route) => false);
