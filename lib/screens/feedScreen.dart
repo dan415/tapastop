@@ -33,6 +33,7 @@ class feedScreenState extends State<feedScreen> {
   String nofoto = "res/no-image.png";
   Map<String, dynamic> comentarios = {};
   Map<String, dynamic> valoraciones = {};
+  late String username;
   Map<String, dynamic> fotos = {};
 
   @override
@@ -41,6 +42,10 @@ class feedScreenState extends State<feedScreen> {
     db = Database();
     auth = FirebaseAuthenticator();
     Future<List<String>>? degustaciones = db.getDegustaciones();
+
+    db.getUser(auth.getCurrentUID().toString()).then((value) {
+      username = value.data()?['nombre'];
+    });
     degustaciones.then((value) {
       setState(() {
         degustaciones_names = value;
@@ -109,7 +114,7 @@ class feedScreenState extends State<feedScreen> {
 
     return time;
   }
-  
+
   Widget post_image(degustacion)  {
 
     return AspectRatio(
@@ -117,7 +122,7 @@ class feedScreenState extends State<feedScreen> {
         child: (nofoto != fotos[degustacion['nombre']]) ?  Image.file(File(fotos[degustacion['nombre']])) : Image.asset(fotos[degustacion['nombre']]));
   }
 
-  
+
   Widget degustacion(degustacion){
     String comentario = "";
     int? valoracion;
@@ -165,7 +170,7 @@ class feedScreenState extends State<feedScreen> {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(comentarios[degustacion['nombre']].docs[index].data()['comentario']),
-                subtitle: Text("Usuario"),
+                subtitle: Text(username),
               );
             },
           ),
@@ -190,7 +195,7 @@ class feedScreenState extends State<feedScreen> {
         automaticallyImplyLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.create),
+          icon: const Icon(Icons.add),
           onPressed: () {
             Navigator.push(context, MyNavigator.createRoute( createDegustacion(), isAnimated: true));
           },

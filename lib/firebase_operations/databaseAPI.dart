@@ -18,22 +18,21 @@ class Database {
       'localidad': localidad ?? '',
       'edad': edad,
       'presentacion': presentacion ?? '',
-			'comentarios': [],
+      'comentarios': [],
     });
   }
 
-	///DocumentSnapshot<Map<String, dynamic>> user = await getUser(uid);
-	///String uid = user.data()['uid'];
-	///String nombre = user.data()['nombre'];
-	///String? apellido = user.data()['apellido'];
-	///String? localidad = user.data()['localidad'];
-	///String edad = user.data()['edad'];
-	///String? presentacion = user.data()['presentacion'];
-	///List<String> comentarios = user.data()['comentarios'] // Estos son los comentarios que ha hecho
-	Future<DocumentSnapshot<Map<String, dynamic>>> getUser(String uid) async {
-		return await db.collection('users').doc(uid).get();
-	}
-
+  ///DocumentSnapshot<Map<String, dynamic>> user = await getUser(uid);
+  ///String uid = user.data()['uid'];
+  ///String nombre = user.data()['nombre'];
+  ///String? apellido = user.data()['apellido'];
+  ///String? localidad = user.data()['localidad'];
+  ///String edad = user.data()['edad'];
+  ///String? presentacion = user.data()['presentacion'];
+  ///List<String> comentarios = user.data()['comentarios'] // Estos son los comentarios que ha hecho
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUser(String uid) async {
+    return await db.collection('users').doc(uid).get();
+  }
 
   addAvatar(File photo, String uid) {
     storage.ref().child('users').child(uid).child('avatar').putFile(photo);
@@ -43,110 +42,155 @@ class Database {
     return storage.ref().child('users').child(uid).child('avatar').getData();
   }
 
-	addFotoDeg(File photo, String degustacion) {
-    storage.ref().child('degustaciones').child(degustacion).child('pic').putFile(photo);
+  addFotoDeg(File photo, String degustacion) {
+    storage
+        .ref()
+        .child('degustaciones')
+        .child(degustacion)
+        .child('pic')
+        .putFile(photo);
   }
-  
-	Future<Uint8List?> getFotoDeg(String degustacion) async {
-		return storage.ref().child('degustaciones').child(degustacion).child('pic').getData();
-	}
 
-	//TODO NO FUNCIONA
-	addDegustacion(String degustacion, String uid, String restaurante, String descripcion, List<String> tipo) {
-		List<String> degustaciones = db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
-		if (degustaciones.contains(degustacion)) {
-			return;
-		}
+  Future<Uint8List?> getFotoDeg(String degustacion) async {
+    return storage
+        .ref()
+        .child('degustaciones')
+        .child(degustacion)
+        .child('pic')
+        .getData();
+  }
 
-		db.collection('degustaciones').doc(degustacion).set({ 
-			'user': uid,
-			'descripcion': descripcion,
-			'tipo': tipo,
-			'restaurante': restaurante,
-			'fecha': DateTime.now(),
-		});
+  addDegustacion(String degustacion, String uid, String restaurante,
+      String descripcion, List<String> tipo) {
+    List<String> degustaciones = [];
+    db
+        .collection('restaurantes')
+        .doc(restaurante)
+        .get()
+        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
+    if (degustaciones.contains(degustacion)) {
+      return;
+    }
 
-		degustaciones.add(degustacion);
-		db.collection('restaurantes').doc(restaurante).update({
-			'degustaciones': degustaciones,
-		});
-	}
+    db.collection('degustaciones').doc(degustacion).set({
+      'user': uid,
+      'descripcion': descripcion,
+      'tipo': tipo,
+      'restaurante': restaurante,
+      'fecha': DateTime.now(),
+    });
 
-	// Si no se especifica valoracion mete null en el último
-	addComentario(String uid, String degustacion, String comentario, int? valoracion) {
-		DocumentReference deg = db.collection('degustaciones').doc(degustacion);
-		deg.collection('comentarios').doc(uid).set({
-			'comentario': comentario,
-			'valoracion': valoracion,
-		});
-		
-		List<String> comentarios = db.collection('users').doc(uid).get().then((value) => value.data()!['comentarios']) as List<String>;
-		comentarios.add(degustacion);
-		db.collection('users').doc(uid).update({
-			'comentarios': degustacion,
-		});
-	}
+    degustaciones.add(degustacion);
+    db.collection('restaurantes').doc(restaurante).update({
+      'degustaciones': degustaciones,
+    });
+  }
 
-	// int valoracionMedia = getValoracionMedia(degustacion);
-	Future<int> getValoracionMedia(String degustacion) async {
-		int valoracion = 0;
-		int numComentarios = 0;
-		await db.collection('degustaciones').doc(degustacion).collection('comentarios').get().then((value) {
-			value.docs.forEach((element) {
-				if (element.data()['valoracion'] != null) {
-					valoracion += element.data()['valoracion']! as int;
-					numComentarios++;
-				}
-			});
-		});
-		return valoracion > 0 ? valoracion ~/ numComentarios : 0;
-	}
+  // Si no se especifica valoracion mete null en el último
+  addComentario(
+      String uid, String degustacion, String comentario, int? valoracion) {
+    DocumentReference deg = db.collection('degustaciones').doc(degustacion);
+    deg.collection('comentarios').doc(uid).set({
+      'comentario': comentario,
+      'valoracion': valoracion,
+    });
 
-	///DocumentSnapshot<Map<String, dynamic>> d = await getInfoDegustacion('degustacion');
-	///String descripcion = d['descripcion'];
-	///List<String> tipo = d['tipo'];
-	///String restaurante = d['restaurante'];
-	///DateTime fecha = d['fecha'];
-	///String user = d['user'];
-	Future<DocumentSnapshot<Map<String, dynamic>>> getInfoDegustacion(String degustacion) {
-		return db.collection('degustaciones').doc(degustacion).get();
-	}
+    List<String> comentarios = db
+        .collection('users')
+        .doc(uid)
+        .get()
+        .then((value) => value.data()!['comentarios']) as List<String>;
+    comentarios.add(degustacion);
+    db.collection('users').doc(uid).update({
+      'comentarios': degustacion,
+    });
+  }
 
-	///QuerySnapshot<Map<String, dynamic>> comentarios = await getComentarios('degustacion');
-	///comentarios.docs.forEach((element) {
-	///		String uid = element.id;
-	///		String comentario = element['comentario'];
-	///		int valoracion = element['valoracion'];
-	///});
-	Future<QuerySnapshot<Map<String, dynamic>>> getComentarios(String degustacion) {
-		return db.collection('degustaciones').doc(degustacion).collection('comentarios').get();
-	}
+  // int valoracionMedia = getValoracionMedia(degustacion);
+  Future<int> getValoracionMedia(String degustacion) async {
+    int valoracion = 0;
+    int numComentarios = 0;
+    await db
+        .collection('degustaciones')
+        .doc(degustacion)
+        .collection('comentarios')
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        if (element.data()['valoracion'] != null) {
+          valoracion += element.data()['valoracion']! as int;
+          numComentarios++;
+        }
+      });
+    });
+    return valoracion > 0 ? valoracion ~/ numComentarios : 0;
+  }
 
-	///List<String> degustaciones = await getDegustacionesUsuario('uid');
-	///Cada elemento de degustaciones es el nombre (ref) de una degustacion
-	//TODO ESTE SUPONGO QUE TAMPOCO
+  ///DocumentSnapshot<Map<String, dynamic>> d = await getInfoDegustacion('degustacion');
+  ///String descripcion = d['descripcion'];
+  ///List<String> tipo = d['tipo'];
+  ///String restaurante = d['restaurante'];
+  ///DateTime fecha = d['fecha'];
+  ///String user = d['user'];
+  Future<DocumentSnapshot<Map<String, dynamic>>> getInfoDegustacion(
+      String degustacion) {
+    return db.collection('degustaciones').doc(degustacion).get();
+  }
+
+  ///QuerySnapshot<Map<String, dynamic>> comentarios = await getComentarios('degustacion');
+  ///comentarios.docs.forEach((element) {
+  ///		String uid = element.id;
+  ///		String comentario = element['comentario'];
+  ///		int valoracion = element['valoracion'];
+  ///});
+  Future<QuerySnapshot<Map<String, dynamic>>> getComentarios(
+      String degustacion) {
+    return db
+        .collection('degustaciones')
+        .doc(degustacion)
+        .collection('comentarios')
+        .get();
+  }
+
+  ///List<String> degustaciones = await getDegustacionesUsuario('uid');
+  ///Cada elemento de degustaciones es el nombre (ref) de una degustacion
   Future<List<String>> getDegustacionesUsuario(String uid) async {
-		return db.collection('users').doc(uid).get().then((value) => value.data()!['degustaciones']) as List<String>;
-	}
+    List<String> degustaciones = [];
+    await db
+        .collection('users')
+        .doc(uid)
+        .get()
+        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
+    return degustaciones;
+  }
 
-	///List<String> degustaciones = await getDegustacionesRestaurante('restaurante');
-	///Cada elemento de degustaciones es el nombre (ref) de una degustacion
-	//TODO NO FUNCIONA
-	Future<List<String>> getDegustacionesRestaurante(String restaurante) async {
-		return db.collection('restaurantes').doc(restaurante).get().then((value) => value.data()!['degustaciones']) as List<String>;
-	}
+  ///List<String> degustaciones = await getDegustacionesRestaurante('restaurante');
+  ///Cada elemento de degustaciones es el nombre (ref) de una degustacion
+  Future<List<String>> getDegustacionesRestaurante(String restaurante) async {
+    List<String> degustaciones = [];
+    await db
+        .collection('restaurantes')
+        .doc(restaurante)
+        .get()
+        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
+    return degustaciones;
+  }
 
-	///List<String> degustaciones = await getDegustaciones();
-	///Cada elemento de degustaciones es el nombre (ref) de una degustacion ordenados por fecha
-	Future<List<String>> getDegustaciones() async {
-		List<String> degustaciones = [];
-		await db.collection('degustaciones').orderBy('fecha', descending: true).get().then((value) {
-			value.docs.forEach((element) {
-				degustaciones.add(element.id);
-			});
-		});
-		return degustaciones;
-	}
+  ///List<String> degustaciones = await getDegustaciones();
+  ///Cada elemento de degustaciones es el nombre (ref) de una degustacion ordenados por fecha
+  Future<List<String>> getDegustaciones() async {
+    List<String> degustaciones = [];
+    await db
+        .collection('degustaciones')
+        .orderBy('fecha', descending: true)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        degustaciones.add(element.id);
+      });
+    });
+    return degustaciones;
+  }
 
   addRestaurante(String restaurante) {
     db
