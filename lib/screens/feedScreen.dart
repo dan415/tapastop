@@ -33,7 +33,6 @@ class feedScreenState extends State<feedScreen> {
   String nofoto = "res/no-image.png";
   Map<String, dynamic> comentarios = {};
   Map<String, dynamic> valoraciones = {};
-  late String username;
   Map<String, dynamic> fotos = {};
 
   @override
@@ -43,9 +42,6 @@ class feedScreenState extends State<feedScreen> {
     auth = FirebaseAuthenticator();
     Future<List<String>>? degustaciones = db.getDegustaciones();
 
-    db.getUser(auth.getCurrentUID().toString()).then((value) {
-      username = value.data()?['nombre'];
-    });
     degustaciones.then((value) {
       setState(() {
         degustaciones_names = value;
@@ -170,7 +166,7 @@ class feedScreenState extends State<feedScreen> {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(comentarios[degustacion['nombre']].docs[index].data()['comentario']),
-                subtitle: Text(username),
+                subtitle: Text(comentarios[degustacion['nombre']].docs[index].data()['uid']),
               );
             },
           ),

@@ -35,29 +35,19 @@ class Database {
   }
 
   addAvatar(File photo, String uid) {
-    storage.ref().child('users').child(uid).child('avatar').putFile(photo);
+    storage.ref().child('users').child(uid).putFile(photo);
   }
 
   Future<Uint8List?> getAvatar(String uid) async {
-    return storage.ref().child('users').child(uid).child('avatar').getData();
+    return storage.ref().child('users').child(uid).getData();
   }
 
   addFotoDeg(File photo, String degustacion) {
-    storage
-        .ref()
-        .child('degustaciones')
-        .child(degustacion)
-        .child('pic')
-        .putFile(photo);
+    storage.ref().child('degustaciones').child(degustacion).putFile(photo);
   }
 
   Future<Uint8List?> getFotoDeg(String degustacion) async {
-    return storage
-        .ref()
-        .child('degustaciones')
-        .child(degustacion)
-        .child('pic')
-        .getData();
+    return storage.ref().child('degustaciones').child(degustacion).getData();
   }
 
   addDegustacion(String degustacion, String uid, String restaurante,
@@ -91,6 +81,7 @@ class Database {
       String uid, String degustacion, String comentario, int? valoracion) {
     DocumentReference deg = db.collection('degustaciones').doc(degustacion);
     deg.collection('comentarios').doc(uid).set({
+      'uid': uid,
       'comentario': comentario,
       'valoracion': valoracion,
     });
