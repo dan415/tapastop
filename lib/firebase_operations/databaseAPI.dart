@@ -79,10 +79,13 @@ class Database {
 
   // Si no se especifica valoracion mete null en el último
   addComentario(
-      String uid, String degustacion, String comentario, int? valoracion) {
+      String uid, String degustacion, String comentario, int? valoracion) async {
     DocumentReference deg = db.collection('degustaciones').doc(degustacion);
+    String name = await db.collection('users').doc(uid).get().then((value) {
+      return value.data()!['nombre'];
+    });
     deg.collection('comentarios').doc(uid).set({
-      'uid': uid,
+      'uid': name,
       'comentario': comentario,
       'valoracion': valoracion,
     });
