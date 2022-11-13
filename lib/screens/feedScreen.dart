@@ -28,6 +28,7 @@ class feedScreenState extends State<feedScreen> {
   int rating = 0;
   Map<String, dynamic> comentarios = {};
   Map<String, dynamic> valoraciones = {};
+  late String username;
 
   @override
   @override
@@ -35,6 +36,10 @@ class feedScreenState extends State<feedScreen> {
     db = Database();
     auth = FirebaseAuthenticator();
     Future<List<String>>? degustaciones = db.getDegustaciones();
+
+    db.getUser(auth.getCurrentUID().toString()).then((value) {
+      username = value.data()?['nombre'];
+    });
     degustaciones.then((value) {
       setState(() {
         degustaciones_names = value;
@@ -136,7 +141,7 @@ class feedScreenState extends State<feedScreen> {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(comentarios[degustacion['nombre']].docs[index].data()['comentario']),
-                subtitle: Text("Usuario"),
+                subtitle: Text(username),
               );
             },
           ),
@@ -162,7 +167,7 @@ class feedScreenState extends State<feedScreen> {
         automaticallyImplyLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.create),
+          icon: const Icon(Icons.add),
           onPressed: () {
             Navigator.push(context, MyNavigator.createRoute( createDegustacion(), isAnimated: true));
           },
