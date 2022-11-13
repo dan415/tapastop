@@ -185,9 +185,12 @@ class Database {
   }
 
   addRestaurante(String restaurante) async {
-    db
-        .collection('restaurantes')
-        .doc(restaurante)
-        .update({'restaurante': restaurante});
+    if (await db.collection('restaurantes').doc(restaurante).get().then(
+            (value) => value.exists) ==
+        false) {
+      db.collection('restaurantes').doc(restaurante).set({
+        'degustaciones': [],
+      });
+    }
   }
 }
