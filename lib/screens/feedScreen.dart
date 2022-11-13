@@ -1,4 +1,7 @@
 
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:tapastop/screens/createDegustacion.dart';
 import 'package:tapastop/utils/globals.dart';
+import 'package:tapastop/utils/imageutils.dart';
 
 import '../firebase_operations/authenticator.dart';
 import '../firebase_operations/databaseAPI.dart';
@@ -26,8 +30,10 @@ class feedScreenState extends State<feedScreen> {
   late Database db;
   late FirebaseAuthenticator auth;
   int rating = 0;
+  String nofoto = "res/no-image.png";
   Map<String, dynamic> comentarios = {};
   Map<String, dynamic> valoraciones = {};
+  Map<String, dynamic> fotos = {};
 
   @override
   @override
@@ -59,7 +65,25 @@ class feedScreenState extends State<feedScreen> {
               valoraciones[degus] = value * 1.0;
             });
           });
-
+          db.getFotoDeg(degus).then((value) {
+            Uint8List? post_image_bytes = value;
+            ImageUtils.getPhotoPath(post_image_bytes, degus).then((value) {
+              setState(() {
+                fotos[degus] = value;
+                print(value);
+              });
+            });
+          })
+          .onError((error, stackTrace) {
+            Uint8List? postImageBytes = null;
+            ImageUtils.getPhotoPath(postImageBytes, degus).then((value) {
+              setState(() {
+                fotos[degus] = value;
+                print(value);
+              });
+            });
+          }
+          );
         }
       });
     });
@@ -85,20 +109,25 @@ class feedScreenState extends State<feedScreen> {
 
     return time;
   }
+  
+  Widget post_image(degustacion)  {
 
+    return AspectRatio(
+        aspectRatio: 16.0 / 9.0,
+        child: (nofoto != fotos[degustacion['nombre']]) ?  Image.file(File(fotos[degustacion['nombre']])) : Image.asset(fotos[degustacion['nombre']]));
+  }
+
+  
   Widget degustacion(degustacion){
     String comentario = "";
     int? valoracion;
 
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-      appBar: bar(),
-        body: Column(
+    return  Column(
       children: [
        Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Paddings.horizontalPadding(size: 300),
+               fotos[degustacion['nombre']] == null ? const LoadingIndicator(indicatorType: Indicator.semiCircleSpin) : post_image(degustacion),
                Text(degustacion['nombre'], style: const TextStyle(fontSize: 15, color: Colors.black, ),),
                Text(degustacion['tipo'][0], style: const TextStyle(fontSize: 15, color: Colors.black)),
                Text(degustacion['descripcion'], style: const TextStyle(fontSize: 15, color: Colors.black)),
@@ -142,7 +171,6 @@ class feedScreenState extends State<feedScreen> {
           ),
         )
       ],
-    )
     );
   }
 
@@ -175,12 +203,13 @@ class feedScreenState extends State<feedScreen> {
     List<Widget> degustaciones =  [];
 
     final PageController controller = PageController(initialPage: 0);
-
-    return PageView(
-      scrollDirection: Axis.vertical,
-      controller: controller,
-      children: degustaciones_list.isEmpty ? [
-         Scaffold(appBar: bar(), body:LoadingIndicator(indicatorType: Indicator.ballPulse))] : degustaciones_widgets(),
+    return Scaffold(
+      appBar: bar(),
+      body: PageView(
+        scrollDirection: Axis.vertical,
+        controller: controller,
+        children: degustaciones_list.isEmpty ? [const Center(child: CircularProgressIndicator())] : degustaciones_widgets(),
+      ),
     );
   }
 

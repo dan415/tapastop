@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +10,7 @@ import 'package:tapastop/firebase_operations/authenticator.dart';
 import 'package:tapastop/firebase_operations/databaseAPI.dart';
 
 import '../utils/globals.dart';
+import '../utils/imageutils.dart';
 import '../utils/navigator.dart';
 import 'homeScreen.dart';
 
@@ -48,6 +51,7 @@ class _SignUpState extends State<SignUpScreen> {
   bool validated_age = false;
   FirebaseAuthenticator _auth = FirebaseAuthenticator();
   Database _db = Database();
+  File? foto;
 
   Widget _buildUsernameField() {
     return Padding(
@@ -282,6 +286,18 @@ class _SignUpState extends State<SignUpScreen> {
             child: ListTile(
               title: MaterialButton(
                 color: Theme.of(context).primaryColor,
+                child: Text(AppLocalizations.of(context)!.loadpic,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white)),
+                onPressed: () async => foto = await ImageUtils.choosImage(ImageType.profile, context),
+              ),
+            ),
+          ),
+
+          Material(
+            child: ListTile(
+              title: MaterialButton(
+                color: Theme.of(context).primaryColor,
                 child: Text(AppLocalizations.of(context)!.signUp,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),
@@ -292,6 +308,9 @@ class _SignUpState extends State<SignUpScreen> {
                     // Añadir usuario a la base de datos
                     String uid = await _auth.createUser(correo, _password);
                     _db.addUser(uid, nombre, apellidos, localidad, _dateTime, bio);
+                    if (foto != null) {
+                      _db.addAvatar(foto!, uid);
+                    }
                     Navigator.pushAndRemoveUntil(
                         context, MyNavigator.createRoute(HomeScreen()), (
                         Route<dynamic> route) => false);

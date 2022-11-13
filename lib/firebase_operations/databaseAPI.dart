@@ -99,7 +99,7 @@ class Database {
 				}
 			});
 		});
-		return valoracion ~/ numComentarios;
+		return valoracion > 0 ? valoracion ~/ numComentarios : 0;
 	}
 
 	///DocumentSnapshot<Map<String, dynamic>> d = await getInfoDegustacion('degustacion');

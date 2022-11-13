@@ -1,10 +1,14 @@
 
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tapastop/firebase_operations/authenticator.dart';
 import 'package:tapastop/firebase_operations/databaseAPI.dart';
+import 'package:tapastop/utils/imageutils.dart';
 
 import '../utils/globals.dart';
 
@@ -20,6 +24,7 @@ class createDegustacionState extends State<createDegustacion> {
   String descripcion = "";
   String restaurante = "";
   String tipos = "";
+  File? foto;
   Database db = Database();
 
   @override
@@ -34,6 +39,9 @@ class createDegustacionState extends State<createDegustacion> {
         ),
         body: ListView(
           children: [
+            const ListTile(
+                title: Text("Nombre de la degustación"),
+                ),
                   ListTile(
                   title: TextFormField(
                   initialValue: "",
@@ -44,6 +52,9 @@ class createDegustacionState extends State<createDegustacion> {
                     validator: (x) => x!.isEmpty ? "El nombre no puede estar vacío" : null,
                   )
               ),
+            const ListTile(
+              title: Text("Descripción de la degustación"),
+            ),
             ListTile(
                 title: TextFormField(
                   initialValue: "",
@@ -54,6 +65,9 @@ class createDegustacionState extends State<createDegustacion> {
                   validator: (x) => x!.isEmpty ? "La descripción no puede estar vacío" : null,
                 )
             ),
+            const ListTile(
+              title: Text("Restaurante"),
+            ),
             ListTile(
                 title: TextFormField(
                   initialValue: "",
@@ -63,6 +77,9 @@ class createDegustacionState extends State<createDegustacion> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (x) => x!.isEmpty ? "El restaurante no puede estar vacío" : null,
                 )
+            ),
+            const ListTile(
+              title: Text("Tipos de comida"),
             ),
             ListTile(
                 title: TextFormField(
@@ -77,8 +94,13 @@ class createDegustacionState extends State<createDegustacion> {
                   validator: (x) => x!.isEmpty ? "Los tipos no pueden estar vacíos" : null,
                 )
             ),
+            ElevatedButton(onPressed: () async => foto = await ImageUtils.choosImage(ImageType.post, context),
+                child: const Text("Cargar foto")),
             ElevatedButton(onPressed: () {
               db.addDegustacion(nombre, FirebaseAuthenticator().getCurrentUID()!, restaurante, descripcion, tipos.split(","));
+              if (foto != null) {
+                db.addFotoDeg(foto!, nombre);
+              }
             },
                  child: const Text("Crear degustación"))
               ]));

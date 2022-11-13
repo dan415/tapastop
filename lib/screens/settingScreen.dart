@@ -313,31 +313,6 @@ class _AccountState extends State<_AccountPage> {
             setState(() {});
           },
         )),
-        Material(child:
-        ListTile(
-          title: editing == Editing.phone
-              ? TextFormField(
-              initialValue: _phone,
-              keyboardType: TextInputType.phone,
-              maxLength: 9,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              onChanged: (change) => _phoneEdit = change,
-              validator: (pass) =>
-              pass!.length != 9 ? AppLocalizations.of(context)!.invPhone : null)
-              : Text(AppLocalizations.of(context)!.cPhone),
-          subtitle: editing == Editing.phone ? null : SelectableText(_phone),
-          trailing: editing == Editing.phone
-              ? IconButton(
-              onPressed: () => Provider.of<UserVM>(context, listen: false)
-                  .updateUserDoc(DocumentFields.phone, _phoneEdit),
-              icon: const Icon(Icons.send),
-              color: Theme.of(context).accentColor)
-              : const Icon(Icons.phone),
-          onTap: () {
-            editing = Editing.phone;
-            setState(() {});
-          },
-        )),
       ],
     );
   }
