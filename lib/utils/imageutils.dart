@@ -15,8 +15,9 @@ class ImageUtils  {
     final getImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
+    print("getImage: $getImage");
     if (getImage != null) {
-      File local = File(getImage.path);
+      local = File(getImage.path);
     }
     return local;
   }

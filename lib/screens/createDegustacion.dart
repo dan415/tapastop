@@ -11,6 +11,8 @@ import 'package:tapastop/firebase_operations/databaseAPI.dart';
 import 'package:tapastop/utils/imageutils.dart';
 
 import '../utils/globals.dart';
+import '../utils/navigator.dart';
+import 'feedScreen.dart';
 
 class createDegustacion extends StatefulWidget {
   const createDegustacion({super.key});
@@ -94,13 +96,23 @@ class createDegustacionState extends State<createDegustacion> {
                   validator: (x) => x!.isEmpty ? "Los tipos no pueden estar vacíos" : null,
                 )
             ),
-            ElevatedButton(onPressed: () async => foto = await ImageUtils.choosImage(ImageType.post, context),
+            ElevatedButton(onPressed: () {
+              setState(() async {
+                 ImageUtils.choosImage(ImageType.post, context).then((value) {
+                   foto = value;
+                   print(foto);
+                 });
+
+              });
+            },
                 child: const Text("Cargar foto")),
             ElevatedButton(onPressed: () {
               db.addDegustacion(nombre, FirebaseAuthenticator().getCurrentUID()!, restaurante, descripcion, tipos.split(","));
+              print(foto);
               if (foto != null) {
                 db.addFotoDeg(foto!, nombre);
               }
+              Navigator.push(context, MyNavigator.createRoute( feedScreen(), isAnimated: true));
             },
                  child: const Text("Crear degustación"))
               ]));
