@@ -52,6 +52,7 @@ class Database {
 
   addDegustacion(String degustacion, String uid, String restaurante,
       String descripcion, List<String> tipo) {
+    addRestaurante(restaurante);
     List<String> degustaciones = [];
     db
         .collection('restaurantes')
@@ -183,10 +184,10 @@ class Database {
     return degustaciones;
   }
 
-  addRestaurante(String restaurante) {
+  addRestaurante(String restaurante) async {
     db
         .collection('restaurantes')
         .doc(restaurante)
-        .set({'restaurante': restaurante});
+        .update({'restaurante': restaurante});
   }
 }
