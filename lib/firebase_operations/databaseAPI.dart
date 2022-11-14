@@ -51,14 +51,16 @@ class Database {
   }
 
   addDegustacion(String degustacion, String uid, String restaurante,
-      String descripcion, List<String> tipo) {
-    addRestaurante(restaurante);
+      String descripcion, List<String> tipo) async {
+    await addRestaurante(restaurante);
     List<String> degustaciones = [];
     db
         .collection('restaurantes')
         .doc(restaurante)
         .get()
-        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
+        .then((value) => (value.data()!['degustaciones'] as List<dynamic>).forEach((element) {
+              degustaciones.add(element.toString());
+            }));
     if (degustaciones.contains(degustacion)) {
       return;
     }
