@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -127,6 +128,7 @@ class _ForgotPassState extends State<ForgotPassScreen> {
   }
 
   void sendEmail() {
+    FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
     String title = AppLocalizations.of(context)!.mailSent;
     String body = "${AppLocalizations.of(context)!.mailSentWL2} $_email";
     goback() => Navigator.pushAndRemoveUntil(

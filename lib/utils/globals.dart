@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../firebase_operations/authenticator.dart';
 
@@ -90,32 +91,49 @@ class PasswordAlertDialog {
     return _showAndroidDialog(context, newPass);
   }
 
-  static Future _showIOSDialog(BuildContext context, String newPass) async {
-    return showCupertinoDialog(context: context, builder: (_) => _PassAlertDialog(newPass));
+  static Future _showIOSDialog(BuildContext context) async {
+    return showCupertinoDialog(context: context, builder: (_) => _PassAlertDialog());
   }
 
   static Future _showAndroidDialog(BuildContext context, String newPass) async {
     return showDialog(
       context: context,
-      builder: (_) => _PassAlertDialog(newPass),
+      builder: (_) => _PassAlertDialog(),
     );
   }
 }
 
 
 class _PassAlertDialog extends StatefulWidget {
-  final String newPassword;
 
-  _PassAlertDialog(this.newPassword);
+  const _PassAlertDialog();
 
   @override
   _PassAlertDialogState createState() => _PassAlertDialogState();
 }
 
 class _PassAlertDialogState extends State<_PassAlertDialog> {
-  bool _obscureText = true;
+  bool _obscureText1 = true;
+  bool _obscureText2 = true;
+  String oldpass = "";
+  String newpass = "";
+  FirebaseAuthenticator auth = FirebaseAuthenticator();
 
-  void _action() {
+  Future<void> _action() async {
+    if(oldpass != null && newpass != null && oldpass != newpass){
+      User? user = FirebaseAuth.instance.currentUser!;
+      user.reauthenticateWithCredential(EmailAuthProvider.credential(email: user.email!, password: oldpass)).then((value) => {
+        print(value),
+        user.updatePassword(newpass).then((value) => {
+          Fluttertoast.showToast(msg: "Contraseña cambiada correctamente"),
+          Navigator.pop(context)
+        })
+      }).onError((error, stackTrace) => {
+        Fluttertoast.showToast(msg: "Contraseña incorrecta")
+      }).catchError((error) => {
+        Fluttertoast.showToast(msg: error.toString())
+      });
+    }
     Navigator.pop(context);
     //Navigator.popAndPushNamed(context, "/account");
   }
@@ -131,36 +149,64 @@ class _PassAlertDialogState extends State<_PassAlertDialog> {
   Widget _buildPassField() {
     return Container(
         margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.03),
-        height: MediaQuery.of(context).size.height * 0.08,
-        child: TextFormField(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          onChanged: (password) {
-            // _password = password;
-          },
-          style: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
-          validator: (pass) => pass!.length < 6 ? AppLocalizations.of(context)!.pass6 : null,
-          obscureText: _obscureText,
-          decoration: InputDecoration(
-              suffixIcon: IconButton(
-                icon: Icon(
-                  Icons.remove_red_eye,
-                  color: _obscureText ? Colors.grey : Theme.of(context).primaryColor,
-                ),
-                onPressed: () {
-                  setState(() => _obscureText = !_obscureText);
-                },
-              ),
-              helperText: " ",
-              border: const OutlineInputBorder(),
-              hintStyle: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
-              hintText: AppLocalizations.of(context)!.enterPass),
-        ));
+        height: MediaQuery.of(context).size.height * 0.2,
+        child: Column(
+          children: [
+            TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              onChanged: (password) {
+                oldpass = password;
+              },
+              style: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
+              validator: (pass) => pass!.length < 6 ? AppLocalizations.of(context)!.pass6 : null,
+              obscureText: _obscureText1,
+              decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      Icons.remove_red_eye,
+                      color: _obscureText1 ? Colors.grey : Theme.of(context).primaryColor,
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureText1 = !_obscureText1);
+                    },
+                  ),
+                  helperText: " ",
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
+                  hintText: AppLocalizations.of(context)!.enterPass),
+            ),
+            TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              onChanged: (password) {
+                newpass = password;
+              },
+              style: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
+              validator: (pass) => pass!.length < 6 ? AppLocalizations.of(context)!.pass6 : null,
+              obscureText: _obscureText2,
+              decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      Icons.remove_red_eye,
+                      color: _obscureText2 ? Colors.grey : Theme.of(context).primaryColor,
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureText2 = !_obscureText2);
+                    },
+                  ),
+                  helperText: " ",
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(fontSize:  MediaQuery.of(context).size.width*0.0334),
+                  hintText: "Introduce la nueva contraseña"),
+            )
+          ],
+        )
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return  AlertDialog(
-      title: Text(AppLocalizations.of(context)!.enterCurPass,
+      title: Text("Introduce tu contraseña actual y nueva contraseña",
           style: TextStyle(color: Theme.of(context).primaryColorDark)),
       content: _buildPassField(),
       actions: [

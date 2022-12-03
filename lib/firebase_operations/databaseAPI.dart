@@ -34,6 +34,10 @@ class Database {
     return await db.collection('users').doc(uid).get();
   }
 
+  changeUserField(String uid, String field, dynamic value) {
+    db.collection('users').doc(uid).update({field: value});
+  }
+
   addAvatar(File photo, String uid) {
     storage.ref().child('users').child(uid).putFile(photo);
   }
@@ -164,12 +168,18 @@ class Database {
   ///List<String> degustaciones = await getDegustacionesRestaurante('restaurante');
   ///Cada elemento de degustaciones es el nombre (ref) de una degustacion
   Future<List<String>> getDegustacionesRestaurante(String restaurante) async {
+    print(restaurante);
     List<String> degustaciones = [];
     await db
         .collection('restaurantes')
         .doc(restaurante)
         .get()
-        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
+        .then((value) {
+      for(var i in value.data()!['degustaciones']){
+        degustaciones.add(i.toString());
+      }
+    });
+    print(degustaciones);
     return degustaciones;
   }
 

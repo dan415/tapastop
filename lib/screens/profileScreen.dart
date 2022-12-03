@@ -53,7 +53,11 @@ class ProfileScreenState extends State<ProfileScreen> {
   String? _email;
   String? _phone;
   String? foto;
+  File?  change_photo;
   String nofoto = "res/no-image.png";
+  Database db = Database();
+  FirebaseAuthenticator auth = FirebaseAuthenticator();
+  String uid =  FirebaseAuth.instance.currentUser!.uid;
   
 
   Future<void> loadSnapshot() async {
@@ -62,9 +66,6 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void initState() {
-    Database db = Database();
-    FirebaseAuthenticator auth = FirebaseAuthenticator();
-    String uid = auth.getCurrentUID() ?? "";
     Future<DocumentSnapshot<Map<String, dynamic>>>? user = db.getUser(uid);
     user.then((value) {
       setState(() {
@@ -114,6 +115,20 @@ class ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          GestureDetector(
+            onTap: () async {
+              change_photo = await ImageUtils.choosImage(ImageType.profile, context);
+              if (change_photo != null){
+                Database db = Database();
+                FirebaseAuthenticator auth = FirebaseAuthenticator();
+                String uid = auth.getCurrentUID() ?? "";
+                db.addAvatar(change_photo!, uid);
+                setState(() {
+                  foto = change_photo!.path;
+                });
+              }
+            },
+        child:
           ClipRRect(
               borderRadius: BorderRadius.circular(_screenWidth / 8),
               child: Container(
@@ -131,6 +146,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                   width: _screenWidth * 0.15,
                 ),
               )
+          )
           )
         ],
         title: Text(

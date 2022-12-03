@@ -12,6 +12,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:provider/provider.dart';
 
+import '../firebase_operations/authenticator.dart';
+import '../firebase_operations/databaseAPI.dart';
 import '../model/userModel.dart';
 import '../model/userViewModel.dart';
 import '../utils/globals.dart';
@@ -31,12 +33,12 @@ class _ProviderWidgetState extends State
     super.build(context);
     return ChangeNotifierProvider.value(
       value: UserVM(),
-      child: _AccountPage(),
+      child: Scaffold(body: _AccountPage()),
     );
   }
 }
 
-enum Editing { none, username, password, birthday, bio, name, phone, country }
+enum Editing { none, username, surname, password, birthday, bio, name, phone, country }
 
 class _AccountPage extends StatefulWidget {
   State<StatefulWidget> createState() => _AccountState();
@@ -47,42 +49,29 @@ class _AccountState extends State<_AccountPage> {
   Editing editing = Editing.none;
   String _displayNameEdit = "";
   String _bioEdit = "";
-  String _usernameEdit = "";
+  String _surname = "";
+  String _localidad  = "";
   String _bdayEdit = ""; // TODO: Add send btn to bday edit tile
   String _phoneEdit = "";
   String _birthday = "";
-  String _phone = "";
   String _bio = "";
+  Database db = Database();
+  FirebaseAuthenticator auth = FirebaseAuthenticator();
+  String uid =  FirebaseAuth.instance.currentUser!.uid;
+  bool _obscureText = true;
 
   @override
   void initState() {
     super.initState();
-    _setValues();
   }
 
-  void _loadSnapshot() {
-    Provider.of<UserVM>(context, listen: false).loadUser(FirebaseAuth.instance.currentUser!.uid);
-  }
 
-  void _setValues() {
-    try {
-      _phone = snapshot?.get("phone");
-    } catch (e) {}
-    try {
-      _bio = snapshot?.get("bio");
-    } catch (e) {}
-    try {
-      _birthday = snapshot?.get("birthday");
-    } catch (e) {}
-  }
 
   void submit(Editing edit) {
     if (editing == Editing.password) {
       FocusScope.of(context).unfocus();
       PasswordAlertDialog.show(context, "").then((_) {
         FocusScope.of(context).unfocus();
-        Fluttertoast.showToast(
-            msg: AppLocalizations.of(context)!.passChanged, backgroundColor: Colors.grey);
       });
     }
     editing = Editing.none;
@@ -125,7 +114,7 @@ class _AccountState extends State<_AccountPage> {
           ButtonBar(children: [
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               child: Text(
                 AppLocalizations.of(context)!.cancel,
                 style: const TextStyle(color: Colors.white),
@@ -143,36 +132,35 @@ class _AccountState extends State<_AccountPage> {
         ]));
   }
 
+  void toast(String text) {
+    Fluttertoast.showToast(msg: text, backgroundColor: Colors.grey);
+  }
 
 
-  // Widget _passField() {
-  //   return TextFormField(
-  //     autovalidateMode: AutovalidateMode.onUserInteraction,
-  //     // onChanged: (password) { // Change this to a btn to reset pass
-  //     //   _password = password;
-  //     // },
-  //     style: TextStyle(fontSize: 14),
-  //     validator: (pass) => pass!.length < 6 ? '${AppLocalizations.of(context)!.pass6}' : null,
-  //     obscureText: _obscureText,
-  //     decoration: InputDecoration(
-  //         suffixIcon: IconButton(
-  //           icon: Icon(
-  //             Icons.remove_red_eye,
-  //             color: _obscureText ? Colors.grey : Theme.of(context).primaryColor,
-  //           ),
-  //           onPressed: () {
-  //             _obscureText = !_obscureText;
-  //             setState(() {});
-  //           },
-  //         ),
-  //         helperText: " ",
-  //         hintStyle: TextStyle(fontSize: 14),
-  //         hintText: '${AppLocalizations.of(context)!.enterPass}'),
-  //   );
-  // }
-
-  Future<void> _upload(DocumentFields field, String value) async {
-    if (value != "") await Provider.of<UserVM>(context, listen: false).updateUserDoc(field, value);
+  Widget _passField() {
+    return TextFormField(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      // onChanged: (password) { // Change this to a btn to reset pass
+      //   _password = password;
+      // },
+      style: const TextStyle(fontSize: 14),
+      validator: (pass) => pass!.length < 6 ? AppLocalizations.of(context)!.pass6 : null,
+      obscureText: _obscureText,
+      decoration: InputDecoration(
+          suffixIcon: IconButton(
+            icon: Icon(
+              Icons.remove_red_eye,
+              color: _obscureText ? Colors.grey : Theme.of(context).primaryColor,
+            ),
+            onPressed: () {
+              _obscureText = !_obscureText;
+              setState(() {});
+            },
+          ),
+          helperText: " ",
+          hintStyle: const TextStyle(fontSize: 14),
+          hintText: AppLocalizations.of(context)!.enterPass),
+    );
   }
 
   Widget _body() {
@@ -187,23 +175,80 @@ class _AccountState extends State<_AccountPage> {
         ListTile(
           title: editing == Editing.name
               ? TextFormField(
-              initialValue: "${snapshot?.get("displayName") ?? ""}",
+              initialValue: "",
               onChanged: (change) => _displayNameEdit = change)
               : Text(AppLocalizations.of(context)!.cName),
           subtitle: editing == Editing.name
               ? null
-              : SelectableText("${snapshot?.get("displayName") ?? ""}"),
+              : const SelectableText(""),
           trailing: editing == Editing.name
               ? IconButton(
               onPressed: () async {
-                _upload(DocumentFields.displayName, _displayNameEdit)
-                    .whenComplete(() => _loadSnapshot());
+                print(uid);
+                if (uid != null) {
+                  db?.changeUserField(uid!, "nombre", _displayNameEdit);
+                  submit(editing);
+                }
               },
               icon: const Icon(Icons.send),
-              color: Theme.of(context).accentColor)
+              color: Theme.of(context).colorScheme.secondary)
               : const Icon(Icons.drive_file_rename_outline),
           onTap: () {
             editing = Editing.name;
+            setState(() {});
+          },
+        )),
+
+        Material(child:
+        ListTile(
+          title: editing == Editing.surname
+              ? TextFormField(
+              initialValue: "",
+              onChanged: (change) => _surname = change)
+              : const Text("Cambiar Apellido"),
+          subtitle: editing == Editing.surname
+              ? null
+              : const SelectableText(""),
+          trailing: editing == Editing.surname
+              ? IconButton(
+              onPressed: () async {
+                print(uid);
+                if (uid != null) {
+                  db.changeUserField(uid!, "apellido", _surname);
+                  submit(editing);
+                }
+              },
+              icon: const Icon(Icons.send),
+              color: Theme.of(context).colorScheme.secondary)
+              : const Icon(Icons.drive_file_rename_outline),
+          onTap: () {
+            editing = Editing.surname;
+            setState(() {});
+          },
+        )),
+        Material(child:
+        ListTile(
+          title: editing == Editing.country
+              ? TextFormField(
+              initialValue: "",
+              onChanged: (change) => _localidad = change)
+              : const Text("Cambiar localidad"),
+          subtitle: editing == Editing.country
+              ? null
+              : const SelectableText(""),
+          trailing: editing == Editing.country
+              ? IconButton(
+              onPressed: () async {
+                if (uid != null) {
+                  db.changeUserField(uid, "localidad", _localidad);
+                  submit(editing);
+                }
+              },
+              icon: const Icon(Icons.send),
+              color: Theme.of(context).colorScheme.secondary)
+              : const Icon(Icons.drive_file_rename_outline),
+          onTap: () {
+            editing = Editing.country;
             setState(() {});
           },
         )),
@@ -217,11 +262,15 @@ class _AccountState extends State<_AccountPage> {
             onChanged: (change) => _bioEdit = change,
           )
               : Text(AppLocalizations.of(context)!.cBio),
-          subtitle: editing == Editing.bio ? null : SelectableText("$_bio"),
+          subtitle: editing == Editing.bio ? null : SelectableText(_bio),
           trailing: editing == Editing.bio
               ? IconButton(
               onPressed: () {
-                _upload(DocumentFields.bio, _bioEdit).whenComplete(() => _loadSnapshot());
+               if (uid != null) {
+                  db?.changeUserField(uid!, "presentacion", _bioEdit);
+                  submit(editing);
+                }
+
               },
               icon: const Icon(Icons.send),
               color: Theme.of(context).colorScheme.secondary)
@@ -238,43 +287,12 @@ class _AccountState extends State<_AccountPage> {
         )),
         Material(child:
         ListTile(
-          title: editing == Editing.username
-              ? TextFormField(
-              initialValue: "${snapshot?.get("username") ?? ""}",
-              onChanged: (change) => _usernameEdit = change)
-              : Text(AppLocalizations.of(context)!.cUser),
-          subtitle: editing == Editing.username
-              ? null
-              : SelectableText("${snapshot?.get("username") ?? ""}"),
-          trailing: editing == Editing.username
-              ? IconButton(
-              onPressed: () async {
-                DataSnapshot? snapshot =
-                await FirebaseDatabase.instance.reference().child("usernames").get();
-                String data = snapshot!.value.toString().replaceAll("}", ",");
-                if (_usernameEdit != "" &&
-                    !_usernameEdit.contains(" ") &&
-                    !data.contains("$_usernameEdit,")) {
-                  await Provider.of<UserVM>(context, listen: false)
-                      .updateUsername(_usernameEdit)
-                      .whenComplete(() => _loadSnapshot());
-                }
-              },
-              icon: const Icon(Icons.send),
-              color: Theme.of(context).accentColor)
-              : const Icon(Icons.alternate_email),
-          onTap: () {
-            editing = Editing.username;
-            setState(() {});
-          },
-        )),
-        Material(child:
-        ListTile(
           title: Text(AppLocalizations.of(context)!.cPass),
           trailing: const Icon(CupertinoIcons.asterisk_circle_fill),
           onTap: () {
+            // RECOVER CARD FROM PARTYRLA
             editing = Editing.password;
-            setState(() {});
+            setState(() {submit(editing);});
           },
         )),
         Material(child:
@@ -282,19 +300,53 @@ class _AccountState extends State<_AccountPage> {
           title: ((editing == Editing.birthday) && Platform.isAndroid)
               ? DateTimePicker(
               initialDate: DateTime.now(),
+              validator: (date) {
+                if (date != null) {
+                  if (date.isNotEmpty) {
+                    DateTime birthday = DateTime.parse(date);
+                    DateTime today = DateTime.now();
+                    int age = today.year - birthday.year;
+                    if (today.month < birthday.month ||
+                        (today.month == birthday.month &&
+                            today.day < birthday.day)) {
+                      age--;
+                      return age < 18
+                          ? AppLocalizations.of(context)!.invAge
+                          : null;
+                    }
+                  }
+                }
+                return null;
+              },
               type: DateTimePickerType.date,
               dateLabelText: AppLocalizations.of(context)!.selDate,
               firstDate: DateTime(1900),
               lastDate: DateTime.now(),
               onFieldSubmitted: (value){
+
               },
 
               onChanged: (value) {
-                if (value.isNotEmpty) {
-                  setState(() {
-                    _bdayEdit = value;
-                    _upload(DocumentFields.birthday, value);
-                  });
+                if (value.isNotEmpty){
+                  DateTime birthday = DateTime.parse(value);
+                  DateTime today = DateTime.now();
+                  int age = today.year - birthday.year;
+                  if (today.month < birthday.month ||
+                      (today.month == birthday.month &&
+                          today.day < birthday.day)) {
+                    age--;
+                  }
+                  if (age < 18) {
+                    _bdayEdit = "";
+                    toast(AppLocalizations.of(context)!.invAge);
+                  } else {
+                    setState(() {
+                      print(value);
+                      _bdayEdit = value;
+                      db.changeUserField(uid, "edad", _bdayEdit);
+                      submit(editing);
+                    });
+                  }
                 }
               })
               : Text(AppLocalizations.of(context)!.cBirthday),
@@ -319,8 +371,6 @@ class _AccountState extends State<_AccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    snapshot = Provider.of<UserVM>(context).userResponse.data;
-    _setValues();
     return NestedScrollView(
         headerSliverBuilder: (context, innerBoxScrolled) => [
           SliverAppBar(

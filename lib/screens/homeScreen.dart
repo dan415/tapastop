@@ -112,7 +112,7 @@ class HomeScreenState extends State<HomeScreen> {
             child: SizedBox(
                 width: 50,
                 height: 50,
-                child: Column( children: const [Icon(Icons.settings, size: 100,), Text("Ajustees")])
+                child: Column( children: const [Icon(Icons.settings, size: 100,), Text("Ajustes")])
 
             ),
           ),

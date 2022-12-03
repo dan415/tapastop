@@ -25,12 +25,13 @@ class feedScreen extends StatefulWidget {
 
 
 class feedScreenState extends State<feedScreen> {
-  List<Map<String, dynamic>> degustaciones_list = [];
-  List<String> degustaciones_names = [];
+
   late Database db;
   late FirebaseAuthenticator auth;
   int rating = 0;
   String nofoto = "res/no-image.png";
+  List<Map<String, dynamic>> degustaciones_list = [];
+  List<String> degustaciones_names = [];
   Map<String, dynamic> comentarios = {};
   Map<String, dynamic> valoraciones = {};
   Map<String, dynamic> fotos = {};
@@ -213,5 +214,4 @@ class feedScreenState extends State<feedScreen> {
       ),
     );
   }
-
 }
