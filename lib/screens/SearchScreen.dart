@@ -39,6 +39,16 @@ class SearchScreenState extends State<SearchScreen> {
     return degustaciones;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    search().then((value) {
+      degustaciones_list.sort((a, b) =>  valoraciones[b['nombre']].compareTo(valoraciones[a['nombre']]));
+      degustaciones_list = degustaciones_list.reversed.toList();
+      setState(() {});
+    });
+  }
+
   String readTimestamp(int timestamp) {
     var now = DateTime.now();
     var format = DateFormat('HH:mm a');
@@ -57,6 +67,34 @@ class SearchScreenState extends State<SearchScreen> {
     }
 
     return time;
+  }
+
+  search() async {
+    degustaciones_list = [];
+    _searchList = [];
+    comentarios = {};
+    valoraciones = {};
+    fotos = {};
+    List<String> degs = [];
+    if(_searchText.isEmpty){
+      degs = await db.getDegustaciones();
+    }
+    else if(filtro == 0) {
+      degs = await db.getDegustaciones();
+      degs.retainWhere((element) => element == _searchText);
+    }
+    else if (filtro == 1){
+      degs = await db.getDegustacionesRestaurante(_searchText);
+    }
+    else if (filtro == 2){
+      var deg_future = await db.getDegustacionesTipo(_searchText);
+      deg_future.forEach((element) {
+        degs.add(element.id);});
+    }
+    for (var d in degs) {
+      _searchList.add(d);
+    }
+    setState(() {set_widgets();});
   }
 
   Widget post_image(degustacion)  {
@@ -101,7 +139,11 @@ class SearchScreenState extends State<SearchScreen> {
             decoration: InputDecoration(
               suffix: IconButton(
                   onPressed: () {
-                    db.addComentario(auth.getCurrentUID()!, degustacion['nombre'], comentario, valoracion);
+                    List<String> tipos_str = [];
+                    degustacion['tipo'].forEach((element) {
+                      tipos_str.add(element.toString());
+                    });
+                    db.addComentario(auth.getCurrentUID()!, degustacion['nombre'], comentario, valoracion, tipos_str);
                   }
                   , icon: Icon(Icons.send)),
               hintText: 'Escribe un comentario',)
@@ -121,25 +163,20 @@ class SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  set_widgets(){
+  set_widgets() async {
+    print("searchlist: $_searchList");
     for(var result in _searchList){
-      db.getInfoDegustacion(result).then((value) {
-        setState(() {
-          print(value.data());
-          var ele = <String, dynamic>{};
-          ele.addAll(value.data()!);
-          ele["nombre"] = result;
-          degustaciones_list.add(ele);
-        });
-      });
+      var info = await db.getInfoDegustacion(result);
+      var ele = <String, dynamic>{};
+      ele.addAll(info.data()!);
+      ele["nombre"] = result;
+      degustaciones_list.add(ele);
+      var val = await db.getValoracionMedia(result);
+      valoraciones[result] = val * 1.0;
+      print(info.data());
       db.getComentarios(result).then((value) {
         setState(() {
           comentarios[result] = value;
-        });
-      });
-      db.getValoracionMedia(result).then((value) {
-        setState(() {
-          valoraciones[result] = value * 1.0;
         });
       });
       db.getFotoDeg(result).then((value) {
@@ -147,7 +184,6 @@ class SearchScreenState extends State<SearchScreen> {
         ImageUtils.getPhotoPath(postImageBytes, result).then((value) {
           setState(() {
             fotos[result] = value;
-            print(value);
           });
         });
       })
@@ -156,15 +192,20 @@ class SearchScreenState extends State<SearchScreen> {
         ImageUtils.getPhotoPath(postImageBytes, result).then((value) {
           setState(() {
             fotos[result] = value;
-            print(value);
           });
         });
       });
   }
+    print(degustaciones_list);
+    degustaciones_list.sort((a, b) =>  valoraciones[b['nombre']].compareTo(valoraciones[a['nombre']]));
+    setState(() {
+
+    });
       }
 
   @override
   Widget build(BuildContext context) {
+    final PageController controller = PageController(initialPage: 0);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -192,25 +233,8 @@ class SearchScreenState extends State<SearchScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.search),
-                  onPressed: () async {
-                    degustaciones_list = [];
-                    _searchList = [];
-                    comentarios = {};
-                    valoraciones = {};
-                    fotos = {};
-                    List<String> degs = [];
-                    if(filtro == 0) {
-                      degs = await db.getDegustaciones();
-                    }
-                    else if (filtro == 1){
-                      degs = await db.getDegustacionesRestaurante(_searchText);
-                    }
-                    for (var d in degs) {
-                      _searchList.add(d);
-                    }
-                    setState(() {
-                      set_widgets();
-                    });
+                  onPressed: () async{
+                    search();
                     FocusScope.of(context).unfocus();
                     },
                 ),
@@ -223,6 +247,7 @@ class SearchScreenState extends State<SearchScreen> {
                     const [
                       DropdownMenuItem(child: Text("Nombre"), value: 0),
                       DropdownMenuItem(child: Text("Restaurante"), value: 1),
+                      DropdownMenuItem(child: Text("Tipo"), value: 2),
                     ]
                     , onChanged: (value) {
                       setState(() {
@@ -233,7 +258,9 @@ class SearchScreenState extends State<SearchScreen> {
             ),
             Expanded(
               child: PageView(
-                children: _searchList.isEmpty ? [Container()]: degustaciones_widgets(),
+                controller: controller,
+                scrollDirection: Axis.vertical,
+                children: degustaciones_widgets(),
               ),
             ),
           ],

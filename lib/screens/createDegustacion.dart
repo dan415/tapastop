@@ -108,6 +108,9 @@ class createDegustacionState extends State<createDegustacion> {
                 child: const Text("Cargar foto")),
             ElevatedButton(onPressed: () {
               db.addDegustacion(nombre, FirebaseAuthenticator().getCurrentUID()!, restaurante, descripcion, tipos.split(","));
+              for (var tipo in  tipos.split(",")){
+                db.checkGalardonesUsuario(FirebaseAuthenticator().getCurrentUID()!, tipo, tipoGalardon.degustacion);
+              }
               print(foto);
               if (foto != null) {
                 db.addFotoDeg(foto!, nombre);

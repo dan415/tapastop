@@ -1,7 +1,14 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../firebase_operations/authenticator.dart';
+import '../firebase_operations/databaseAPI.dart';
 import '../utils/globals.dart';
+import '../utils/imageutils.dart';
 import '../utils/navigator.dart';
 
 class GalardonScreen extends StatefulWidget {
@@ -13,141 +20,97 @@ class GalardonScreen extends StatefulWidget {
 
 
 class GalardonScreenState extends State<GalardonScreen> {
-  //TODO GET GALARDONES
+  Database db = Database();
+  FirebaseAuthenticator auth = FirebaseAuthenticator();
+  String nofoto = "res/no-image.png";
+  String uid =  FirebaseAuth.instance.currentUser!.uid;
+  Map<String, String> galfotos = {};
+  List<dynamic> gals = [];
+  List<Widget> gals_widgets = [];
   List<Map<String, String>>? galardones;
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-    body:
-      Container(
-      color: Colors.white,
-      padding: Paddings.containerPadding(screenSize: MediaQuery.of(context).size),
-      child: Column(children: [
-        Container(
-            height: 75,
-            alignment: Alignment.bottomCenter,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => {},
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        FittedBox(
-                          fit: BoxFit.contain,
-                          child: Text(
-                            "Galardones",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 30,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )),
-        Expanded(
-          child: _galardonList(galardones)
-          ),
-      ]),
-    ));
+  void initState() {
+    db.getGalardonesUsuario(uid).then((value) {
+      setState(() {
+        gals = value;
+        for(int i = 0; i < gals.length; i++){
+          String nombre_foto = gals[i].data()["foto"];
+          db.getFotoGal(nombre_foto).then((value) {
+            Uint8List? post_image_bytes = value;
+            ImageUtils.getPhotoPath(post_image_bytes, nombre_foto).then((value) {
+              setState(() {
+
+                galfotos[gals[i].id] = value;
+                print(galfotos);
+              });
+            });
+          })
+              .onError((error, stackTrace) {
+            print(error);
+            Uint8List? postImageBytes = null;
+            ImageUtils.getPhotoPath(postImageBytes, null).then((value) {
+              setState(() {
+                galfotos[gals[i].id] = value;
+              });
+            });
+          }
+          );
+        }
+      });
+    });
+    super.initState();
   }
 
-  Widget _galardonList(galardones) {
-    List<Widget> galardonList = [];
-    if (galardones != null) {
-      for (var galardon in galardones) {
-        galardonList.add(
-            _galardonListItem(
-                id: galardonList.length,
-                name: galardon.username,
-                descripcion: galardon.id
-            )
-        );
-        galardonList.add(const Divider(
-          thickness: 2,
-        ));
-      }
-    }
-
-    return MediaQuery.removePadding(
-      context: context,
-      removeTop: true,
-      child: ListView(
-        children: galardonList.isNotEmpty ? galardonList : [
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: const Text(
-              "No tienes galardones",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
+  Widget galardonWidget(dynamic galardon){
+    double _screenWidth = MediaQuery.of(context).size.width;
+    print(galfotos[galardon.id]) ;
+    return ListTile(
+      leading: ClipRRect(
+          borderRadius: BorderRadius.circular(_screenWidth / 8),
+          child: Container(
+            color: Colors.white,
+            child: (nofoto == galfotos[galardon.id] || galfotos[galardon.id] == null) ?
+            Image.asset(
+              nofoto,
+              fit: BoxFit.cover,
+              height: _screenWidth * 0.15,
+              width: _screenWidth * 0.15,
+            ) :
+            Image.file(File(galfotos[galardon.id]!),
+              fit: BoxFit.cover,
+              height: _screenWidth * 0.15,
+              width: _screenWidth * 0.15,
             ),
           )
-          ],
       ),
+      title:   Text("${galardon.id.replaceAll("_", " ")}"?? "No name", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      subtitle: Text("${galardon.data()["descripcion"]}"?? "No description", style: const TextStyle(fontSize: 14)),
+      trailing: Column(
+          children:[
+            const Text("Nivel", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text("${galardon.data()['nivel']}"?? "unknown", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ]
+      ) ,
     );
   }
 
-  int _higlightedRow = -1;
-  _higlightRow(int row) => (TapDownDetails details) {
-    setState(() {
-      _higlightedRow = row;
-    });
-  };
 
-  _dehighliteRow({Widget? page}) => () {
-    setState(() {
-      _higlightedRow = -1;
-    });
-    if (page != null) Navigator.push(context, MyNavigator.createRoute(page, isAnimated: true));
-  };
-
-  Widget _galardonListItem({required id, required String name, required String descripcion}) {
-    return Container(
-      color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(vertical: 25),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTapDown: _higlightRow(id),
-                onTapCancel: _dehighliteRow(),
-                onTap: _dehighliteRow(page: null),
-                child: Container(
-                  decoration: _decor(_higlightedRow == id),
-                  child: Column(
-                    children: [
-                      Text(name),
-                      Text(descripcion)
-                    ],
-                  )
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-
-  BoxDecoration _decor(bool activated) {
-    return (activated)
-        ? BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(10))
-        : BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(10));
-  }
-
-  int _droped = -1;
-  _drop(int id) {
-    setState(() {
-      _droped = id;
-    });
+  @override
+  Widget build(BuildContext context) {
+    gals_widgets = [const Divider()];
+    for (int i = 0; i < gals.length; i++) {
+      gals_widgets.add(galardonWidget(gals[i]));
+      gals_widgets.add(const Divider());
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Galardones"),
+      ),
+      body: ListView(
+        children: gals_widgets,
+      ),
+    );
   }
 
 

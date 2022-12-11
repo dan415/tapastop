@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+enum tipoGalardon { degustacion, comentario }
+
 class Database {
   FirebaseFirestore db = FirebaseFirestore.instance;
   final storage = FirebaseStorage.instance;
@@ -54,6 +56,10 @@ class Database {
     return storage.ref().child('degustaciones').child(degustacion).getData();
   }
 
+  Future<Uint8List?> getFotoGal(String galardon) async {
+    return storage.ref().child('galardones').child(galardon).getData();
+  }
+
   addDegustacion(String degustacion, String uid, String restaurante,
       String descripcion, List<String> tipo) async {
     await addRestaurante(restaurante);
@@ -85,7 +91,7 @@ class Database {
 
   // Si no se especifica valoracion mete null en el último
   addComentario(
-      String uid, String degustacion, String comentario, int? valoracion) async {
+      String uid, String degustacion, String comentario, int? valoracion, List<String> tipos) async {
     DocumentReference deg = db.collection('degustaciones').doc(degustacion);
     String name = await db.collection('users').doc(uid).get().then((value) {
       return value.data()!['nombre'];
@@ -96,15 +102,24 @@ class Database {
       'valoracion': valoracion,
     });
 
-    List<String> comentarios = db
+    List<String> comentarios = [];
+    await db
         .collection('users')
         .doc(uid)
         .get()
-        .then((value) => value.data()!['comentarios']) as List<String>;
+        .then((value) {
+      for (var i in value.data()!['comentarios']) {
+        comentarios.add(i.toString());
+      }
+    });
     comentarios.add(degustacion);
     db.collection('users').doc(uid).update({
-      'comentarios': degustacion,
+      'comentarios': comentarios,
     });
+    for (var tipo in  tipos){
+      print("tipo: $tipo");
+      checkGalardonesUsuario(uid, tipo, tipoGalardon.comentario);
+    }
   }
 
   // int valoracionMedia = getValoracionMedia(degustacion);
@@ -155,14 +170,102 @@ class Database {
 
   ///List<String> degustaciones = await getDegustacionesUsuario('uid');
   ///Cada elemento de degustaciones es el nombre (ref) de una degustacion
-  Future<List<String>> getDegustacionesUsuario(String uid) async {
-    List<String> degustaciones = [];
+  Future<List<dynamic>> getDegustacionesUsuario(String uid) async {
+    List<dynamic> degustaciones = [];
+    await db
+        .collection('degustaciones')
+        .get()
+        .then((value) {
+      for(var i in value.docs){
+        if(i.data()['user'] == uid){
+          degustaciones.add(i);
+        }
+      }
+    });
+    return degustaciones;
+  }
+
+  Future<List<dynamic>> getGalardonesUsuario(String uid) async {
+    List<dynamic> galardones = [];
+    await db
+        .collection('users')
+        .doc(uid)
+        .collection("galardones")
+        .orderBy('fecha', descending: true)
+        .get()
+        .then((value) {
+      for(var i in value.docs){
+        galardones.add(i);
+      }
+    });
+    return galardones;
+  }
+
+Future<List<dynamic>> getComentariosUsuario(String uid) async {
+    List<dynamic> comentarios = [];
     await db
         .collection('users')
         .doc(uid)
         .get()
-        .then((value) => degustaciones.addAll(value.data()!['degustaciones']));
-    return degustaciones;
+        .then((value) {
+      for(var i in value.data()!['comentarios']){
+        comentarios.add(i);
+      }
+    });
+    return comentarios;
+  }
+
+  carrycount(dynamic galardones, int count, String uid, String cat, tipoGalardon tipo ){
+    galardones.forEach((galardon) {
+      print(galardon.data());
+      if ( ((galardon.data()['tipo']=="comentar" && tipo==tipoGalardon.comentario) || (galardon.data()['tipo']=="añadir" && tipo==tipoGalardon.degustacion) )&& galardon.data()['tipo_comida']==cat){
+        for(var i = 10; i>0; i--){
+          if (count>=galardon.data()['n$i']){
+            addGalardon(uid, galardon.id, galardon.data()["descripcion"], i.toString(), galardon.data()["foto"]);
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  checkGalardonesUsuario(String uid, String cat, tipoGalardon tipo) async {
+    int count = 0;
+    await getGalardones().then((galardones) => {
+      if (tipo==tipoGalardon.degustacion){
+        getDegustacionesUsuario(uid).then((degs) async {
+          for(var element in degs){
+            var deg = await getInfoDegustacion(element.id);
+            if (deg.data()!['tipo'].contains(cat)){
+              count++;
+            }
+          }
+          carrycount(galardones, count, uid, cat, tipo);
+        })
+      }
+      else {
+        getComentariosUsuario(uid).then((coms) async {
+          for(var element in coms){
+            var deg = await getInfoDegustacion(element);
+            if (deg.data()!['tipo'].contains(cat)){
+              count++;
+            }
+          }
+          carrycount(galardones, count, uid, cat, tipo);
+        })
+      },
+    });
+  }
+
+  addGalardon(
+      String uid, String nombre, String descripcion, String nivel, String foto) async {
+    DocumentReference user = db.collection('users').doc(uid);
+    user.collection('galardones').doc(nombre).set({
+      'nivel': nivel,
+      "descripcion": descripcion,
+      'fecha': DateTime.now(),
+      'foto': foto,
+    });
   }
 
   ///List<String> degustaciones = await getDegustacionesRestaurante('restaurante');
@@ -177,11 +280,43 @@ class Database {
         .then((value) {
       for(var i in value.data()!['degustaciones']){
         degustaciones.add(i.toString());
+
       }
     });
     print(degustaciones);
     return degustaciones;
   }
+
+  Future<List<dynamic>> getDegustacionesTipo(String tipo) async {
+    List<dynamic> degustaciones = [];
+    await db
+        .collection('degustaciones')
+        .get().then((value) {
+          value.docs.forEach((element) {
+            if(element.data()['tipo'].contains(tipo)){
+              degustaciones.add(element);
+            }
+          });
+        });
+    return degustaciones;
+  }
+
+  Future<List<dynamic>> getGalardones() async {
+    List<dynamic> galardones = [];
+    await db
+        .collection('galardones')
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        galardones.add(element);
+      });
+    });
+    return galardones;
+  }
+
+
+
+
 
   ///List<String> degustaciones = await getDegustaciones();
   ///Cada elemento de degustaciones es el nombre (ref) de una degustacion ordenados por fecha

@@ -36,7 +36,7 @@ class feedScreenState extends State<feedScreen> {
   Map<String, dynamic> valoraciones = {};
   Map<String, dynamic> fotos = {};
 
-  @override
+
   @override
   void initState() {
     db = Database();
@@ -95,15 +95,15 @@ class feedScreenState extends State<feedScreen> {
   String readTimestamp(int timestamp) {
     var now = DateTime.now();
     var format = DateFormat('HH:mm a');
-    var date = DateTime.fromMicrosecondsSinceEpoch(timestamp * 1000);
-    var diff = date.difference(now);
+    var date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    var diff = now.difference(date);
     var time = '';
 
-    if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
+    if (diff.inDays < 1) {
       time = format.format(date);
     } else {
       if (diff.inDays == 1) {
-        time = '${diff.inDays} days ago';
+        time = '${diff.inDays} day ago';
       } else {
         time = '${diff.inDays} days ago';
       }
@@ -131,10 +131,10 @@ class feedScreenState extends State<feedScreen> {
               children: [
                fotos[degustacion['nombre']] == null ? const LoadingIndicator(indicatorType: Indicator.semiCircleSpin) : post_image(degustacion),
                Text(degustacion['nombre'], style: const TextStyle(fontSize: 15, color: Colors.black, ),),
-               Text(degustacion['tipo'][0], style: const TextStyle(fontSize: 15, color: Colors.black)),
+               Text(degustacion['tipo'].toString(), style: const TextStyle(fontSize: 15, color: Colors.black)),
                Text(degustacion['descripcion'], style: const TextStyle(fontSize: 15, color: Colors.black)),
                Text(degustacion['restaurante'], style: const TextStyle(fontSize: 15, color: Colors.black)),
-               Text(readTimestamp(degustacion['fecha'].seconds*1000).toString(), style: const TextStyle(fontSize: 15, color: Colors.black)),
+               Text(readTimestamp(degustacion['fecha'].seconds).toString(), style: const TextStyle(fontSize: 15, color: Colors.black)),
                 StarRating(
                     rating: valoraciones[degustacion['nombre']] ?? 0.0,
                     onRatingChanged: (rating) => {}, color: Theme.of(context).primaryColor,)
@@ -156,7 +156,11 @@ class feedScreenState extends State<feedScreen> {
           decoration: InputDecoration(
             suffix: IconButton(
                 onPressed: () {
-                  db.addComentario(auth.getCurrentUID()!, degustacion['nombre'], comentario, valoracion);
+                  List<String> tipos_str = [];
+                  degustacion['tipo'].forEach((element) {
+                    tipos_str.add(element.toString());
+                  });
+                  db.addComentario(auth.getCurrentUID()!, degustacion['nombre'], comentario, valoracion, tipos_str);
                 }
                 , icon: Icon(Icons.send)),
             hintText: 'Escribe un comentario',)
